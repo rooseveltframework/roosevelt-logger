@@ -115,22 +115,25 @@ class Logger {
           // the param is a new key that's not one of the defaults
           let enable
           let type
+          let emoji
           // check if the new key is an object
           if (typeof params[key] === 'object') {
             // assign values. if enable isn't set, set it to true
             enable = (params[key]['enable'] !== undefined) ? params[key]['enable'] : true
             type = params[key]['type'] || 'info'
+            emoji = typeof params.emoji !== 'undefined' ? params.emoji : true
           } else {
             // if it's not an object set enable
             enable = params[key]
             type = 'info'
+            emoji = typeof params.emoji !== 'undefined' ? params.emoji : true
           }
           // create a function for the new param
           this[key] = function () {
             // log if the param is set to true
             if (enable !== 'false' && enable !== false) {
               // parse the log arguments
-              let logs = argumentsToString(arguments, type)
+              let logs = argumentsToString(arguments, type, emoji)
               // send the log level and message to winston for logging
               logger.log({ level: type, message: logs })
             }
