@@ -84,6 +84,12 @@ class Logger {
   constructor (params) {
     // check to see if parameters are set
     if (params && typeof params === 'object') {
+      // make sure all default params are defined
+      for (let param in defaults) {
+        if (params[param] === undefined) {
+          params[param] = defaults[param]
+        }
+      }
       // iterate over params
       for (let key in params) {
         // check if the param is already a key in the defaults
