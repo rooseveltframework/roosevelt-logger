@@ -47,11 +47,11 @@
     ]
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --recursive --timeout 10000 test",
-    "test-debug": "./node_modules/.bin/mocha --inspect-brk --timeout 10000 test",
+    "test": "./node_modules/.bin/mocha --recursive --timeout 10000 test/unit",
+    "test-debug": "./node_modules/.bin/mocha --inspect-brk --timeout 10000 test/unit",
     "lint": "npm run standard && ./node_modules/.bin/eslint .",
     "standard": "./node_modules/.bin/standard",
-    "coverage": "nyc ./node_modules/.bin/mocha --recursive --timeout 10000 test"
+    "coverage": "nyc ./node_modules/.bin/mocha --recursive --timeout 10000 test/unit"
   },
   "lint-staged": {
     "*.js": "standard"
