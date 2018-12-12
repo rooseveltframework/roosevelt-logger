@@ -90,8 +90,8 @@ class Logger {
         if (key in defaults) {
           // set the value for the default param
           switch (key) {
-            case 'appStatus':
-              this.enableAppStatus = params[key]
+            case 'info':
+              this.info = params[key]
               break
             case 'warnings':
               this.enableWarnings = params[key]
@@ -141,7 +141,7 @@ class Logger {
       }
     } else {
       // if there are no parameters set then use the defaults
-      this.enableAppStatus = defaults.appStatus
+      this.info = defaults.info
       this.enableWarnings = defaults.warnings
       this.enableVerbose = defaults.verbose
       this.enableEmoji = defaults.emoji
@@ -149,9 +149,9 @@ class Logger {
   }
 
   // default log types
-  // appStatus logs
+  // info logs
   log () {
-    if (this.enableAppStatus !== 'false' && this.enableAppStatus !== false) {
+    if (this.info !== 'false' && this.info !== false) {
       logger.log({ level: 'info', message: argumentsToString(arguments, null, this.enableEmoji) })
     }
   }

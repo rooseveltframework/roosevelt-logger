@@ -1,6 +1,5 @@
 {
-  "http": true,
-  "appStatus": true,
+  "info": true,
   "warnings": true,
   "verbose": false,
   "emoji": true

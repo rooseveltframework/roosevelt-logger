@@ -8,8 +8,7 @@ const util = require('util')
 describe('Logger Tests', function () {
   // Parameters to pass to the logger
   let configs = {
-    'http': true,
-    'appStatus': true,
+    'info': true,
     'warnings': true,
     'verbose': true,
     'emoji': true,
