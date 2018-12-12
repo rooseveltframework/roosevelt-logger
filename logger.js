@@ -27,8 +27,7 @@ const logger = winston.createLogger({
 })
 
 /**
- * Takes in an input of arguments which are parsed, concatenated,
- * and returned back as a string.
+ * Takes in an input of arguments which are parsed, concatenated, and returned back as a string.
  * @param {object} input - Objet of arguments to be parsed
  * @param {string} type - Accepts type 'error', 'warn', or null to prepend the log type to the returning string.
  * @param {boolean} enableEmoji - If the returning string should contain emojis or remove them
