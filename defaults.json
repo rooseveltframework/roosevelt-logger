@@ -1,6 +1,24 @@
 {
-  "info": true,
-  "warnings": true,
-  "verbose": false,
-  "emoji": true
+  "info": {
+    "type": "info",
+    "enable": true,
+    "prefix": false
+  },
+  "warn": {
+    "type": "warn",
+    "enable": true,
+    "prefix": "⚠️"
+  },
+  "error": {
+    "type": "error",
+    "enable": true,
+    "prefix": "❌"
+  },
+  "verbose": {
+    "type": "info",
+    "enable": false,
+    "prefix": false
+  },
+  "emoji": true,
+  "disable": []
 }

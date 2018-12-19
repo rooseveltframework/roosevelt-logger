@@ -80,8 +80,56 @@ function removeEmojis (str) {
   return words.join('')
 }
 
+function setParams (params) {
+  let newParams = {}
+  // loop params and assign values
+  for (let key in params) {
+    if (defaults[key]) {
+      if (key === 'emoji') {
+        newParams[key] = typeof params[key] === 'boolean' ? params[key] : defaults[key]
+      } else if (key === 'disable') {
+        newParams[key] = Array.isArray(params[key]) ? params[key] : defaults[key]
+      } else if (typeof params[key] === 'object') {
+        newParams[key] = {
+          type: (params[key]['type'] && typeof params[key]['type'] === 'string') ? params[key]['type'] : defaults[key]['type'],
+          enable: (params[key]['enable'] && typeof params[key]['enable'] === 'boolean') ? params[key]['enable'] : defaults[key]['enable'],
+          prefix: (params[key]['prefix'] && (typeof params[key]['prefix'] === 'string' || typeof params[key]['prefix'] === 'boolean')) ? params[key]['prefix'] : defaults[key]['prefix']
+        }
+      } else if (typeof params[key] === 'boolean') {
+        newParams[key] = {
+          type: defaults[key]['type'],
+          enable: params[key],
+          prefix: defaults[key]['prefix']
+        }
+      }
+    } else {
+      if (typeof params[key] === 'object') {
+        newParams[key] = {
+          type: (params[key]['type'] && typeof params[key]['type'] === 'string') ? params[key]['type'] : 'info',
+          enable: (params[key]['enable'] && typeof params[key]['enable'] === 'boolean') ? params[key]['enable'] : true,
+          prefix: (params[key]['prefix'] && (typeof params[key]['prefix'] === 'string' || typeof params[key]['prefix'] === 'boolean')) ? params[key]['prefix'] : false
+        }
+      } else if (typeof params[key] === 'boolean') {
+        newParams[key] = {
+          type: 'info',
+          enable: params[key],
+          prefix: false
+        }
+      }
+    }
+  }
+  // loop defaults to make sure the newParams contains all default log types
+  for (let key in defaults) {
+    if (!newParams[key]) {
+      newParams[key] = defaults[key]
+    }
+  }
+  return newParams
+}
+
 class Logger {
   constructor (params) {
+    params = setParams(params)
     // check to see if parameters are set
     if (params && typeof params === 'object') {
       // make sure all default params are defined
