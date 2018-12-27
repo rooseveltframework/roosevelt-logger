@@ -2,23 +2,27 @@
   "info": {
     "type": "info",
     "enable": true,
-    "prefix": false
+    "prefix": false,
+    "color": false
   },
   "warn": {
     "type": "warn",
     "enable": true,
-    "prefix": "⚠️"
+    "prefix": "⚠️ ",
+    "color": "yellow"
   },
   "error": {
     "type": "error",
     "enable": true,
-    "prefix": "❌"
+    "prefix": "❌",
+    "color": "red"
   },
   "verbose": {
     "type": "info",
     "enable": false,
-    "prefix": false
+    "prefix": false,
+    "color": false
   },
-  "emoji": true,
+  "enablePrefix": true,
   "disable": []
 }

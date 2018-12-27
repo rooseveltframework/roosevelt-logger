@@ -1,24 +1,23 @@
-const defaults = require('./defaults.json')
-const emoji = require('node-emoji')
-const toArray = require('lodash.toarray')
 const util = require('util')
 const winston = require('winston')
+require('colors')
+const colors = require('colors/safe')
+
+const defaults = require('./defaults.json')
 const { combine, printf } = winston.format
 
 // transports object to easily override settings
 const transports = {
   console: new winston.transports.Console({
-    stderrLevels: ['error', 'warn'],
-    json: false,
-    colorize: true
+    stderrLevels: ['error', 'warn']
   })
 }
 
 // logger module
-const logger = winston.createLogger({
+const wLogger = winston.createLogger({
   // clean output instead of winstons default
   format: combine(
-    printf(info => `${info.message}`)
+    printf(info => info.message)
   ),
   // basic console transport set-up
   transports: [
@@ -29,55 +28,39 @@ const logger = winston.createLogger({
 /**
  * Takes in an input of arguments which are parsed, concatenated, and returned back as a string.
  * @param {object} input - Objet of arguments to be parsed
- * @param {string} type - Accepts type 'error', 'warn', or null to prepend the log type to the returning string.
- * @param {boolean} enableEmoji - If the returning string should contain emojis or remove them
+ * @param {boolean} enablePrefix - If the returning string should contain a prefix or remove them
+ * @param {string} prefix - a string that is prepended to the returning string.
  * @returns {string} - Returns the parsed and concatenated string of arguments
  */
-function argumentsToString (input, type, enableEmoji) {
+function argumentsToString (input, enablePrefix, prefix) {
   let str = ''
-  let args = Array.prototype.slice.call(input)
-  if (typeof args[0] === 'string' && args[0].length !== 0 && (type === 'warn' || type === 'error')) {
-    if ((type === 'warn' || type === 'error') && enableEmoji && !emoji.which(args[0])) {
-      str += type === 'error' ? '❌  ' : '⚠️  '
-    } else if (!enableEmoji) {
-      str += type === 'error' ? 'error: ' : 'warning: '
-    }
-  }
-  for (let k in args) {
-    if (typeof args[k] === 'string') {
-      if (enableEmoji && emoji.which(args[k])) {
-        str += args[k] + '  '
-      } else if (!enableEmoji) {
-        if (!emoji.which(args[k])) {
-          str += removeEmojis(args[k]) + ' '
-        }
-      } else {
-        str += args[k] + ' '
-      }
-    } else {
-      str += util.inspect(args[k], false, null, true) + ' '
-    }
-  }
-  return str
-}
+  let args = Object.values(input)
 
-/**
- * Removes emojis and 1 proceeding space if one exists
- * Ex: 'Test 🌗 String' would be 'Test String'
- * @param {string} str - String to remove emojis from
- * @returns {String} - String with the emojis removed
- */
-function removeEmojis (str) {
-  let words = toArray(str)
-  for (let x = words.length - 1; x >= 0; x--) {
-    if (emoji.findByCode(words[x])) {
-      words[x] = ''
-      if (words[x + 1] === ' ') {
-        words[x + 1] = ''
-      }
+  if (enablePrefix && typeof args[0] === 'string' && args.length > 1) {
+    str += args[0] + '  '
+  } else if (
+    typeof args[0] === 'string' && enablePrefix &&
+    (prefix !== '' && prefix !== false && prefix !== null && prefix !== undefined)
+  ) {
+    str += prefix + '  ' + args[0]
+  } else if (args.length === 1) {
+    if (typeof args[0] === 'string') {
+      str += args[0] + ' '
+    } else {
+      str += util.inspect(args[0], false, null, false) + ' '
     }
   }
-  return words.join('')
+
+  let rest = args.slice(1)
+
+  for (let k in rest) {
+    if (typeof rest[k] === 'string') {
+      str += rest[k] + ' '
+    } else {
+      str += util.inspect(rest[k], false, null, false) + ' '
+    }
+  }
+  return str.trimRight()
 }
 
 function setParams (params) {
@@ -85,42 +68,55 @@ function setParams (params) {
   // loop params and assign values
   for (let key in params) {
     if (defaults[key]) {
-      if (key === 'emoji') {
+      if (key === 'enablePrefix') {
         newParams[key] = typeof params[key] === 'boolean' ? params[key] : defaults[key]
       } else if (key === 'disable') {
         newParams[key] = Array.isArray(params[key]) ? params[key] : defaults[key]
       } else if (typeof params[key] === 'object') {
+        let { type, enable, prefix, color } = params[key]
         newParams[key] = {
-          type: (params[key]['type'] && typeof params[key]['type'] === 'string') ? params[key]['type'] : defaults[key]['type'],
-          enable: (params[key]['enable'] && typeof params[key]['enable'] === 'boolean') ? params[key]['enable'] : defaults[key]['enable'],
-          prefix: (params[key]['prefix'] && (typeof params[key]['prefix'] === 'string' || typeof params[key]['prefix'] === 'boolean')) ? params[key]['prefix'] : defaults[key]['prefix']
+          type: validateType(type) ? type : defaults[key].type,
+          enable: validateEnable(enable) ? enable : defaults[key].enable,
+          prefix: validatePrefix(prefix) ? prefix : defaults[key].prefix,
+          color: validateColor(color) ? color : defaults[key].color
         }
       } else if (typeof params[key] === 'boolean') {
         newParams[key] = {
-          type: defaults[key]['type'],
+          type: defaults[key].type,
           enable: params[key],
-          prefix: defaults[key]['prefix']
+          prefix: defaults[key].prefix,
+          color: false
         }
       }
     } else {
       if (typeof params[key] === 'object') {
+        let { type, enable, prefix, color } = params[key]
         newParams[key] = {
-          type: (params[key]['type'] && typeof params[key]['type'] === 'string') ? params[key]['type'] : 'info',
-          enable: (params[key]['enable'] && typeof params[key]['enable'] === 'boolean') ? params[key]['enable'] : true,
-          prefix: (params[key]['prefix'] && (typeof params[key]['prefix'] === 'string' || typeof params[key]['prefix'] === 'boolean')) ? params[key]['prefix'] : false
+          type: validateType(type) ? type : 'info',
+          enable: validateEnable(enable) ? enable : true,
+          prefix: validatePrefix(prefix) ? prefix : false,
+          color: validateColor(color) ? color : false
         }
       } else if (typeof params[key] === 'boolean') {
         newParams[key] = {
           type: 'info',
           enable: params[key],
-          prefix: false
+          prefix: false,
+          color: false
         }
+      } else if (key === 'disable') {
+        newParams[key] = params[key]
       }
     }
   }
+
+  if (process.env['ROOSEVELT_LOGGER_DISABLE_PREFIX'] === 'true') {
+    newParams.enablePrefix = false
+  }
+
   // loop defaults to make sure the newParams contains all default log types
   for (let key in defaults) {
-    if (!newParams[key]) {
+    if (newParams[key] === undefined) {
       newParams[key] = defaults[key]
     }
   }
@@ -129,105 +125,118 @@ function setParams (params) {
 
 class Logger {
   constructor (params) {
-    params = setParams(params)
+    this.params = setParams(params)
+    params = this.params
     // check to see if parameters are set
     if (params && typeof params === 'object') {
-      // make sure all default params are defined
-      for (let param in defaults) {
-        if (params[param] === undefined) {
-          params[param] = defaults[param]
-        }
-      }
       // iterate over params
       for (let key in params) {
         // check if the param is already a key in the defaults
         if (key in defaults) {
           // set the value for the default param
-          switch (key) {
-            case 'info':
-              this.info = params[key]
-              break
-            case 'warnings':
-              this.enableWarnings = params[key]
-              break
-            case 'verbose':
-              this.enableVerbose = params[key]
-              break
-            case 'emoji':
-              this.enableEmoji = params[key]
+          if (key === 'disable') {
+            // loop through array of args in the disable param
+            for (let env in params[key]) {
+              // if the arg is set to true/"true" in process.env or it's the env in process.env.NODE_ENV, supress the logs
+              if (process.env.NODE_ENV === params[key][env] || process.env[params[key][env]] === 'true') {
+                transports.console.silent = true
+              }
+            }
           }
-        } else if (key === 'disable') {
-          // loop through array of args in the disable param
-          for (let env in params[key]) {
-            // if the arg is set to true/"true" in process.env or it's the env in process.env.NODE_ENV, supress the logs
-            if (process.env.NODE_ENV === params[key][env] || process.env[params[key][env]] === true || process.env[params[key][env]] === 'true') {
-              transports.console.silent = true
+
+          if (['info', 'warn', 'verbose', 'error'].includes(key)) {
+            let { enablePrefix } = params
+            let { enable, type, color } = params[key]
+
+            this[key] = function () {
+              // log if the param is set to true
+              if (enable !== 'false' && enable !== false) {
+                // parse the log arguments
+                let logs = argumentsToString(arguments, enablePrefix, params[key]['prefix'])
+                // send the log level and message to winston for logging
+                if (color === false) {
+                  wLogger.log({ level: type, message: logs })
+                } else {
+                  wLogger.log({ level: type, message: colors[color](logs) })
+                }
+              }
             }
           }
         } else {
           // the param is a new key that's not one of the defaults
           let enable
           let type
-          let emoji
+          let color
+          let { enablePrefix } = params
+
           // check if the new key is an object
           if (typeof params[key] === 'object') {
             // assign values. if enable isn't set, set it to true
-            enable = (params[key]['enable'] !== undefined) ? params[key]['enable'] : true
-            type = params[key]['type'] || 'info'
-            emoji = typeof params.emoji !== 'undefined' ? params.emoji : true
+            enable = params[key].enable
+            type = params[key].type
+            color = (typeof params[key].color === 'undefined')
+              ? (() => {
+                switch (type) {
+                  case 'warn':
+                    return 'yellow'
+                  case 'error':
+                    return 'red'
+                  default:
+                    return false
+                }
+              })()
+              : params[key].color
           } else {
             // if it's not an object set enable
             enable = params[key]
             type = 'info'
-            emoji = typeof params.emoji !== 'undefined' ? params.emoji : true
+            color = false
           }
           // create a function for the new param
           this[key] = function () {
             // log if the param is set to true
             if (enable !== 'false' && enable !== false) {
               // parse the log arguments
-              let logs = argumentsToString(arguments, type, emoji)
+              let logs = argumentsToString(arguments, enablePrefix, params[key]['prefix'])
               // send the log level and message to winston for logging
-              logger.log({ level: type, message: logs })
+              if (color === false) {
+                wLogger.log({ level: type, message: logs })
+              } else {
+                wLogger.log({ level: type, message: colors[color](logs) })
+              }
             }
           }
         }
       }
-    } else {
-      // if there are no parameters set then use the defaults
-      this.info = defaults.info
-      this.enableWarnings = defaults.warnings
-      this.enableVerbose = defaults.verbose
-      this.enableEmoji = defaults.emoji
     }
-  }
 
-  // default log types
-  // info logs
-  log () {
-    if (this.info !== 'false' && this.info !== false) {
-      logger.log({ level: 'info', message: argumentsToString(arguments, null, this.enableEmoji) })
-    }
-  }
-
-  // warning logs
-  warn () {
-    if (this.enableWarnings !== 'false' && this.enableWarnings !== false) {
-      logger.log({ level: 'warn', message: argumentsToString(arguments, 'warn', this.enableEmoji) })
-    }
-  }
-
-  // verbose logs
-  verbose () {
-    if (this.enableVerbose !== 'false' && this.enableVerbose !== false) {
-      logger.log({ level: 'info', message: argumentsToString(arguments, null, this.enableEmoji) })
-    }
-  }
-
-  // error logs (always on by default)
-  error () {
-    logger.log({ level: 'error', message: argumentsToString(arguments, 'error', this.enableEmoji) })
+    // create log function to map to logger.info
+    this.log = this.info
   }
 }
 
-module.exports = (params) => new Logger(params)
+function validateType (type) {
+  return type !== undefined && typeof type === 'string'
+}
+
+function validateEnable (enableBool) {
+  return enableBool !== undefined && typeof enableBool === 'boolean'
+}
+
+function validatePrefix (prefix) {
+  return prefix !== undefined && (typeof prefix === 'string' || typeof prefix === 'boolean')
+}
+
+function validateColor (color) {
+  return color !== undefined && (typeof color === 'string' || typeof color === 'boolean')
+}
+
+module.exports = createLogger
+
+function createLogger (params) {
+  return new Logger(params)
+}
+
+createLogger.winston = winston
+createLogger.winstonLogger = wLogger
+createLogger.transports = transports

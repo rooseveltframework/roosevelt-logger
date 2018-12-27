@@ -9,9 +9,9 @@ describe('Logger Tests', function () {
   // Parameters to pass to the logger
   let configs = {
     'info': true,
-    'warnings': true,
+    'warn': true,
     'verbose': true,
-    'emoji': true,
+    'enablePrefix': true,
     'custom1': true,
     'custom2': {
       'type': 'info'
@@ -71,7 +71,6 @@ describe('Logger Tests', function () {
     logger.error('This should have an emoji prefix')
     logger.warn('This should also have an emoji prefix')
     logger.error('❤️', 'This should not add a prefix because one is already there')
-    logger.custom4('This log is custom', '⚠️', 'with an emoji in the middle')
 
     // disabled logs
     logger.custom5('Should not have an output 1')
@@ -88,13 +87,12 @@ describe('Logger Tests', function () {
     assert.strictEqual(logs[3].includes('Should be of type info'), true, 'The logger did not output a custom log')
     assert.strictEqual(logs[4].includes('Single object key type param'), true, 'The logger did not output a custom log')
     assert.strictEqual(logs[5].includes('Single object key enabled param'), true, 'The logger did not output a custom log')
-    assert.strictEqual(logs[6].includes(util.inspect({ 'this': 'is an object' }, false, null, true)), true, 'The logger did not output an object')
+    assert.strictEqual(logs[6].includes(util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The logger did not output an object')
 
     // error log assertions
     assert.strictEqual(errors[0].includes('❌  This should have an emoji prefix'), true, 'The logger did not automatically add an emoji to the error log')
-    assert.strictEqual(errors[1].includes('⚠️  This should also have an emoji prefix'), true, 'The logger did not automatically add an emoji to the error log')
+    assert.strictEqual(errors[1].includes('⚠️   This should also have an emoji prefix'), true, 'The logger did not automatically add an emoji to the error log')
     assert.strictEqual(errors[2].includes('❤️  This should not add a prefix because one is already there'), true, 'The logger added an emoji prefix')
-    assert.strictEqual(errors[3].includes('This log is custom ⚠️  with an emoji in the middle'), true, 'The logger did not output a custom log')
 
     // disabled log assertions
     if (typeof logs[7] !== 'undefined') {
@@ -142,7 +140,7 @@ describe('Logger Tests', function () {
 
     // error log assertions
     assert.strictEqual(errors[0].includes('❌  Error Log'), true, 'The logger did not output an error log')
-    assert.strictEqual(errors[1].includes('⚠️  Warning Log'), true, 'The logger did not output a warning log')
+    assert.strictEqual(errors[1].includes('⚠️   Warning Log'), true, 'The logger did not output a warning log')
 
     // exit test
     done()
@@ -174,16 +172,16 @@ describe('Logger Tests', function () {
     assert.strictEqual(logs[1].includes(''), true, 'The logger failed to output an emty string')
     assert.strictEqual(logs[2].includes('123'), true, 'The logger did not output a number')
     // use inspect for objects
-    assert.strictEqual(logs[3].includes(util.inspect({ key: 'value' }, false, null, true)), true, 'The logger did not output an object')
-    assert.strictEqual(logs[4].includes(util.inspect([ 'array' ], false, null, true)), true, 'The logger did not output an array')
+    assert.strictEqual(logs[3].includes('{ key: \'value\' }'), true, 'The logger did not output an object')
+    assert.strictEqual(logs[4].includes(util.inspect([ 'array' ], false, null, false)), true, 'The logger did not output an array')
 
     // exit test
     done()
   })
 
-  it('Should disable emojis when emoji is set to false', function (done) {
+  it('Should remove prefixes when enablePrefix is set to false', function (done) {
     // require the logger for this test
-    configs.emoji = false
+    configs.enablePrefix = false
     const logger = require('../../logger')(configs)
 
     // variable to store the logs
@@ -223,10 +221,10 @@ describe('Logger Tests', function () {
     assert.strictEqual(logs[3].includes('Custom2'), true, 'The logger did not remove the emoji in logger.custom2()')
 
     // error log assertions
-    assert.strictEqual(errors[0].includes('error: Error Log'), true, 'The logger did not remove the emoji in logger.error()')
-    assert.strictEqual(errors[1].includes('warning: Warning Log'), true, 'The logger did not remove the emoji in logger.warn()')
-    assert.strictEqual(errors[2].includes('error: Error Log'), true, 'The logger did not remove the emoji in logger.error()')
-    assert.strictEqual(errors[3].includes('warning: Warning Log'), true, 'The logger did not remove the emoji in logger.warn()')
+    assert.strictEqual(errors[0].includes('Error Log'), true, 'The logger did not remove the emoji in logger.error()')
+    assert.strictEqual(errors[1].includes('Warning Log'), true, 'The logger did not remove the emoji in logger.warn()')
+    assert.strictEqual(errors[2].includes('Error Log'), true, 'The logger did not remove the emoji in logger.error()')
+    assert.strictEqual(errors[3].includes('Warning Log'), true, 'The logger did not remove the emoji in logger.warn()')
 
     // exit test
     done()
