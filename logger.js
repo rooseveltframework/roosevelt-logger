@@ -274,5 +274,5 @@ function createLogger (params) {
 }
 
 createLogger.winston = winston
-createLogger.winstonLogger = wLogger
+createLogger.winstonInstance = wLogger
 createLogger.transports = transports
