@@ -17,6 +17,8 @@ logger.log('some info')
 logger.warn('a warning')
 logger.error('an error')
 logger.verbose('noisy log only displayed when verbose is enabled')
+logger.log('✅', 'log prepended with a custom emoji or other string')
+
 ```
 
 This would output the following:
@@ -25,11 +27,12 @@ This would output the following:
 some info
 ⚠️  a warning
 ❌  an error
+✅  log prepended with a custom emoji or other string
 ```
 
 ## Configure logger
 
-Optionally you can pass the logger a set of configs. Each config type that maps to a default log type can be set to either a boolean to enable / disable the log or an object :
+Optionally you can pass the logger a set of configs. Each config type that maps to a default log type can be set to either a boolean to enable / disable the log or an object:
 
 - `info` *[Boolean]*: Enable regular logs.
 
@@ -43,14 +46,14 @@ Optionally you can pass the logger a set of configs. Each config type that maps 
 
   - Default: `false`.
 
-- `disable` *[Array of Strings]*: Disable logging in certain environments. Each entry can be either an environment variable or a set NODE_ENV mode.
+- `disable` *[Array of Strings]*: Disable all logging in certain environments. Each entry can be either an environment variable or the value of the `NODE_ENV` environment variable.
 
   - Default: `[]`.
   - Example usage:
-    -`['LOADED_MOCHA_OPTS']` (disables logger when being run by [Mocha](https://mochajs.org/).)
-    -`['production']` (disables logger when NODE_ENV is set to 'production'.)
+    - `['LOADED_MOCHA_OPTS']`: Disables logger when app is being run by [Mocha](https://mochajs.org/).
+    - `['production']`: Disables logger when `NODE_ENV` is set to `production`.
 
-- `enablePrefix` *[Boolean]*: Enable prefixes which can contain emojis to be prepended to logs. This can also be toggled with the `ROOSEVELT_LOGGER_ENABLE_PREFIX` environment variable.
+- `enablePrefix` *[Boolean]*: Enable prefixes which can contain emojis or other strings to be prepended to logs. This can also be toggled with the `ROOSEVELT_LOGGER_ENABLE_PREFIX` environment variable.
 
 - Custom log type *[Object]*: You can also define your own log types and specify what native log type it maps to.
 
@@ -59,14 +62,14 @@ Optionally you can pass the logger a set of configs. Each config type that maps 
     - `enable` *[Boolean]*: Enable this custom log.
       - Default:  `true`.
     - `type` *[String]*: What type of native log this custom log maps to.
-      - Default: `info`
+      - Default: `info`.
       - Allowed values: `info`, `warn`, or `error`.
-    - `prefix`: *[String]*: The string that prefixes any log entry. If set to a falsy item (null, an empty string, etc), the prefix will be disabled for the following log type.
-      - default: If not set, default to the prefix of the type (i.e.: if the type is `warn`, the prefix will default to `⚠️`)
-    - `color`: *[String]*: The color that the text will be set to using [Colors](https://www.npmjs.com/package/colors).
-      - default: If not set, it will default to the color of the type for `warn` and `error`, and no color for `info`.
+    - `prefix`: *[String]*: The string that prefixes any log entry. If not set or set to a falsy value (e.g. `null`, an empty string, etc), the prefix will be disabled.
+      - Default for warnings: `⚠️`.
+      - Default for errors: `❌`.
+    - `color`: *[String]*: The color that the text will be set to using [colors](https://www.npmjs.com/package/colors) npm package. If not set, it will use whatever the default color is for the native type selected.
 
-  - Simple custom type example for a new log type called `dbError`:
+  - Example: Simple custom type example for a new log type called `dbError`:
 
     ```json
     {
@@ -74,7 +77,7 @@ Optionally you can pass the logger a set of configs. Each config type that maps 
     }
     ```
 
-  - The above example would create a custom log type `dbError`. Since no params are supplied to it, it defaults to being enabled and defaults to log type `info` and no prefix or color.
+    - The above example would create a custom log type called `dbError`. Since no params are supplied to it, it defaults to being enabled and defaults to log type `info` with no prefix or color.
 
   - Complex custom type example:
 
@@ -95,12 +98,12 @@ Require the package into your application and call its constructor:
 
 ```js
 const logger = require('roosevelt-logger')({
-    verbose: true,
-    dbError: {
+    verbose: true, // enables verbose logging
+    dbError: {     // create custom error called dbError
         type: 'error',
         prefix: '🗄'
     }
-    disable: ['LOADED_MOCHA_OPTS']
+    disable: ['LOADED_MOCHA_OPTS'] // disable logging during Mocha tests
 })
 
 logger.log('some info')
@@ -122,8 +125,9 @@ noisy log only displayed when verbose is enabled
 
 ## Properties of roosevelt-logger module
 
-In addition to the constructor, roosevelt-logger exposes the following properties:
+In addition to the constructor, `roosevelt-logger` exposes the following properties:
 
-* `winston`: *[Function]*: The instance of [Winston](https://www.npmjs.com/package/winston) that roosevelt-logger uses internally.
-* `winstonLogger`: The specific logger instance of [Winston](https://www.npmjs.com/package/winston) in roosevelt-logger.
-* `transports`: The default transports enabled by roosevelt-logger.
+* `winston`: *[Function]*: The instance of [Winston](https://www.npmjs.com/package/winston) that `roosevelt-logger` uses internally.
+* `winstonInstance`: The specific logger instance of [Winston](https://www.npmjs.com/package/winston) in `roosevelt-logger`.
+* `transports`: The default [Winston transports](https://github.com/winstonjs/winston#transports) enabled by `roosevelt-logger`.
+
