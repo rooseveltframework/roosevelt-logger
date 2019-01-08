@@ -1,5 +1,7 @@
 # roosevelt-logger
 
+[![Build Status](https://travis-ci.org/rooseveltframework/roosevelt-logger.svg?branch=master)](https://travis-ci.org/rooseveltframework/roosevelt-logger) [![codecov](https://codecov.io/gh/rooseveltframework/roosevelt-logger/branch/master/graph/badge.svg)](https://codecov.io/gh/rooseveltframework/roosevelt-logger) [![npm](https://img.shields.io/npm/v/roosevelt-logger.svg)](https://www.npmjs.com/package/roosevelt-logger)
+
 Intuitive, attractive logger for Node.js applications based on [Winston](https://github.com/winstonjs/winston). This module was built and is maintained by the [Roosevelt web framework team](https://github.com/rooseveltframework/roosevelt), but it can be used independently of Roosevelt as well.
 
 ## Install
