@@ -40,10 +40,7 @@ function argumentsToString (input, enablePrefix, prefix) {
   if (enablePrefix && typeof args[0] === 'string' && args.length > 1) {
     // Custom prefix
     str += args[0] + '  '
-  } else if (
-    enablePrefix &&
-    (prefix !== '' && prefix !== false && prefix !== null && prefix !== undefined && prefix !== '')
-  ) {
+  } else if (enablePrefix && prefix && prefix.length > 0) {
     // Defualt prefix
     let arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
     str += prefix + '  ' + arg0
@@ -110,8 +107,6 @@ function setParams (params) {
           prefix: undefined,
           color: undefined
         }
-      } else if (key === 'disable') {
-        newParams[key] = params[key]
       }
     }
   }
@@ -132,78 +127,64 @@ function setParams (params) {
 function Logger (params) {
   this.params = setParams(params)
   params = this.params
-  // check to see if parameters are set
-  if (params && typeof params === 'object') {
-    // iterate over params
-    for (let key in params) {
-      // check if the param is already a key in the defaults
-      if (key in defaults) {
-        // set the value for the default param
-        if (key === 'disable') {
-          // loop through array of args in the disable param
-          for (let env in params[key]) {
-            // if the arg is set to true/"true" in process.env or it's the env in process.env.NODE_ENV, supress the logs
-            if (process.env.NODE_ENV === params[key][env] || process.env[params[key][env]] === 'true') {
-              transports.console.silent = true
-            }
+
+  // iterate over params
+  for (let key in params) {
+    // check if the param is already a key in the defaults
+    if (key in defaults) {
+      // set the value for the default param
+      if (key === 'disable') {
+        // loop through array of args in the disable param
+        for (let env in params[key]) {
+          // if the arg is set to true/"true" in process.env or it's the env in process.env.NODE_ENV, supress the logs
+          if (process.env.NODE_ENV === params[key][env] || process.env[params[key][env]] === 'true') {
+            transports.console.silent = true
           }
         }
+      }
 
-        if (['info', 'warn', 'verbose', 'error'].includes(key)) {
-          let { enablePrefix } = params
-          let { enable, type, color } = params[key]
-
-          this[key] = function (...args) {
-            createLog(args, enable, enablePrefix, params[key].prefix, color, type)
-          }
-        }
-      } else {
-        // the param is a new key that's not one of the defaults
-        let enable
-        let type
-        let color
-        let prefix
+      if (['info', 'warn', 'verbose', 'error'].includes(key)) {
         let { enablePrefix } = params
+        let { enable, type, color } = params[key]
 
-        // check if the new key is an object
-        if (typeof params[key] === 'object') {
-          // assign values. if enable isn't set, set it to true
-          enable = params[key].enable
-          type = params[key].type
-          prefix = (typeof params[key].prefix === 'undefined')
-            ? (() => {
-              switch (type) {
-                case 'warn':
-                  return '⚠️ '
-                case 'error':
-                  return '❌'
-                default:
-                  return false
-              }
-            })()
-            : params[key].prefix
-          color = (typeof params[key].color === 'undefined')
-            ? (() => {
-              switch (type) {
-                case 'warn':
-                  return 'yellow'
-                case 'error':
-                  return 'red'
-                default:
-                  return false
-              }
-            })()
-            : params[key].color
-        } else {
-          // if it's not an object set enable
-          enable = params[key]
-          type = 'info'
-          color = false
-        }
-        // create a function for the new param
         this[key] = function (...args) {
-          createLog(args, enable, enablePrefix, prefix, color, type)
+          createLog(args, enable, enablePrefix, params[key].prefix, color, type)
         }
+      }
+    } else {
+      // the param is a new key that's not one of the defaults, assign values
+      let enable = params[key].enable
+      let type = params[key].type
+      let { enablePrefix } = params
+      let prefix = (typeof params[key].prefix === 'undefined')
+        ? (() => {
+          switch (type) {
+            case 'warn':
+              return '⚠️ '
+            case 'error':
+              return '❌'
+            default:
+              return false
+          }
+        })()
+        : params[key].prefix
+
+      let color = (typeof params[key].color === 'undefined')
+        ? (() => {
+          switch (type) {
+            case 'warn':
+              return 'yellow'
+            case 'error':
+              return 'red'
+            default:
+              return false
+          }
+        })()
+        : params[key].color
+
+      // create a function for the new param
+      this[key] = function (...args) {
+        createLog(args, enable, enablePrefix, prefix, color, type)
       }
     }
   }
