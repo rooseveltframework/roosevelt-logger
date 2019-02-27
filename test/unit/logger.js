@@ -8,13 +8,26 @@ const util = require('util')
 describe('Logger Tests', function () {
   // Parameters to pass to the logger
   let configs = {
-    'info': true,
+    'info': 'badparam',
     'warn': true,
-    'verbose': true,
-    'enablePrefix': true,
+    'verbose': {
+      'type': 'info',
+      'enable': true,
+      'prefix': false,
+      'color': false
+    },
+    'error': {
+      'type': undefined,
+      'enable': undefined,
+      'prefix': undefined,
+      'color': undefined
+    },
+    'enablePrefix': 'default',
     'custom1': true,
     'custom2': {
-      'type': 'info'
+      'type': 'info',
+      'prefix': true,
+      'color': false
     },
     'custom3': {
       'enable': true
@@ -26,7 +39,18 @@ describe('Logger Tests', function () {
     'custom5': {
       'enable': false
     },
-    'custom6': false
+    'custom6': {
+      'type': 'warn'
+    },
+    'custom7': {
+      'type': 'info',
+      'prefix': '🍕',
+      'enable': true,
+      'color': false
+    },
+    'custom8': false,
+    'custom9': 'badvalue',
+    'disable': null
   }
 
   // hook for stdout and stderr streams
@@ -66,6 +90,8 @@ describe('Logger Tests', function () {
     logger.custom2('Single object key type param')
     logger.custom3('Single object key enabled param')
     logger.log({ 'this': 'is an object' })
+    logger.log('🍕', { 'this': 'is an object' })
+    logger.custom7({ 'this': 'is an object' })
 
     // error logs
     logger.error('This should have an emoji prefix')
@@ -88,6 +114,8 @@ describe('Logger Tests', function () {
     assert.strictEqual(logs[4].includes('Single object key type param'), true, 'The logger did not output a custom log')
     assert.strictEqual(logs[5].includes('Single object key enabled param'), true, 'The logger did not output a custom log')
     assert.strictEqual(logs[6].includes(util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The logger did not output an object')
+    assert.strictEqual(logs[7].includes('🍕  ' + util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The logger did not output an object with pizza prefix')
+    assert.strictEqual(logs[8].includes('🍕  ' + util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The custom logger did not output an object with pizza prefix by default')
 
     // error log assertions
     assert.strictEqual(errors[0].includes('❌  This should have an emoji prefix'), true, 'The logger did not automatically add an emoji to the error log')
@@ -95,10 +123,10 @@ describe('Logger Tests', function () {
     assert.strictEqual(errors[2].includes('❤️  This should not add a prefix because one is already there'), true, 'The logger added an emoji prefix')
 
     // disabled log assertions
-    if (typeof logs[7] !== 'undefined') {
+    if (typeof logs[9] !== 'undefined') {
       assert.fail('logger.custom5 output a log even though the log type is disabled')
     }
-    if (typeof logs[8] !== 'undefined') {
+    if (typeof logs[10] !== 'undefined') {
       assert.fail('logger.custom6 output a log even though the log type is disabled')
     }
 
@@ -264,6 +292,20 @@ describe('Logger Tests', function () {
     forkedLogger.stdout.on('data', data => {
       if (data.includes('Test Log')) {
         assert.fail('Logs were not disabled if process.env.test2 = \'true\'')
+      }
+    })
+
+    forkedLogger.on('exit', () => {
+      done()
+    })
+  })
+
+  it('Should disable log prefix if process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'', function (done) {
+    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'ROOSEVELT_LOGGER_ENABLE_PREFIX': false } })
+
+    forkedLogger.stderr.on('data', data => {
+      if (data.includes('⚠️ Test Warning Log')) {
+        assert.fail('Log prefixes were not disabled when process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'')
       }
     })
 
