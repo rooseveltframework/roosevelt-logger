@@ -129,7 +129,7 @@ noisy log only displayed when verbose is enabled
 
 In addition to the constructor, `roosevelt-logger` exposes the following properties:
 
-* `winston`: *[Function]*: The instance of [Winston](https://www.npmjs.com/package/winston) that `roosevelt-logger` uses internally.
-* `winstonInstance`: The specific logger instance of [Winston](https://www.npmjs.com/package/winston) in `roosevelt-logger`.
+* `winston`: *[Function]*: The [Winston](https://www.npmjs.com/package/winston) module that `roosevelt-logger` uses internally.
+* `winstonInstance`: The specific [Winston](https://www.npmjs.com/package/winston) object instance instantiated by `roosevelt-logger`.
 * `transports`: The default [Winston transports](https://github.com/winstonjs/winston#transports) enabled by `roosevelt-logger`.
 
