@@ -309,7 +309,7 @@ function validateEnable (enableBool) {
  * @param {string} type - Type of a log type
  */
 function sanitizePrefix (prefix, type) {
-  // sanitize prefix
+  // check prefix validity
   let validPrefix = prefix !== undefined && (typeof prefix === 'string' || typeof prefix === 'boolean')
 
   // set to a default if invalid

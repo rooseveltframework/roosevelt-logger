@@ -6,7 +6,7 @@
 - Change to class based instantiation.
   - Add `enableLogger()` and `disableLogger()` methods.
   - Add `enablePrefix()` and `disablePrefix()` methods.
-  - Add `createNewMethod()` method.
+  - Add `createLogMethod()` method.
 - Overhaul API
 
 ## 0.1.0
