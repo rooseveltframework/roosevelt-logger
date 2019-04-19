@@ -7,7 +7,17 @@ const util = require('util')
 const Logger = require('../../logger')
 
 describe('Logger Tests', function () {
-  // Parameters to pass to the logger
+  /**
+   * Thanks to https://github.com/rooseveltframework/roosevelt-logger/issues/34
+   * It's necessary to spoof the platform across all tests to prevent them from being polluted by windows
+   */
+  before(function () {
+    Object.defineProperty(process, 'platform', {
+      value: 'linux'
+    })
+  })
+
+  // parameters to pass to the logger
   let configs = {
     methods: {
       'info': 'badparam',
@@ -277,20 +287,6 @@ describe('Logger Tests', function () {
     })
   })
 
-  it('Should disable logs if disable is set to [\'test1\'] and process.env.test1 = true', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'test1': true } })
-
-    forkedLogger.stdout.on('data', data => {
-      if (data.includes('Test Log')) {
-        assert.fail('Logs were not disabled if process.env.test1 = true')
-      }
-    })
-
-    forkedLogger.on('exit', () => {
-      done()
-    })
-  })
-
   it('Should disable logs if disable is set to [\'test2\'] and process.env.test2 = \'true\'', function (done) {
     const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'test2': 'true' } })
 
@@ -380,8 +376,8 @@ describe('Logger Tests', function () {
     unhookStderr()
 
     // log assertions
-    assert.strictEqual(errors[0].includes('This prefix should not be seen'), true, 'The logger failed to disable the prefix')
-    assert.strictEqual(errors[1].includes('⚠️   This prefix should be seen'), true, 'The logger failed to enable the prefix')
+    assert.strictEqual(errors[0].includes('⚠️'), false, 'The logger failed to disable the prefix')
+    assert.strictEqual(errors[1].includes('⚠️'), true, 'The logger failed to enable the prefix')
 
     // exit test
     done()
@@ -427,5 +423,23 @@ describe('Logger Tests', function () {
 
     // exit test
     done()
+  })
+
+  it('Should disable log prefix by default in windows and allow override via ROOSEVELT_LOGGER_ENABLE_PREFIX env and logger.enablePrefix method', function (done) {
+    let logs = []
+    const forkedLogger = fork(path.join(__dirname, '../util/windowsFork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'] })
+
+    forkedLogger.stderr.on('data', data => {
+      // push each log to an array
+      logs.push(data.toString())
+    })
+
+    forkedLogger.on('exit', () => {
+      // log assertions
+      assert.strictEqual(logs[0].includes('⚠️'), false, 'The logger failed to disable prefixes in windows by default')
+      assert.strictEqual(logs[1].includes('⚠️'), true, 'The logger failed to enable prefix via enablePrefix()')
+      assert.strictEqual(logs[2].includes('⚠️'), true, 'The logger failed to enable prefix via env')
+      done()
+    })
   })
 })

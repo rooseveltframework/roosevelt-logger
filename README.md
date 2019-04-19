@@ -88,12 +88,13 @@ Optionally you can pass the logger a set of configs.
 - `params`: Configuration that applies to all logger methods:
 
   - `disable` *[Array of Strings]*: Disable all logging in certain environments. Each entry can be either an environment variable or the value of the `NODE_ENV` environment variable.
-  - Default: `[]`.
+    - Default: `[]`.
     - Example usage:
       - `['LOADED_MOCHA_OPTS']`: Disables logger when app is being run by [Mocha](https://mochajs.org/).
       - `['production']`: Disables logger when `NODE_ENV` is set to `production`.
 
   - `enablePrefix` *[Boolean]*: Enable prefixes which can contain emojis or other strings to be prepended to logs. This can also be toggled with the `ROOSEVELT_LOGGER_ENABLE_PREFIX` environment variable.
+    - Note: Due to lack of support for emojis in most windows terminals this param is disabled by default in windows. This can be overridden with the `ROOSEVELT_LOGGER_ENABLE_PREFIX` environment variable or `logger.enablePrefix()` method.
 
 ## Usage with custom configs
 
@@ -110,25 +111,22 @@ const logger = require('roosevelt-logger')({
 })
 
 logger.log('some info')
+//=> some info
+
 logger.warn('a warning')
+//=> ⚠️  a warning
+
 logger.error('an error')
+//=> ❌  an error
+
 logger.verbose('noisy log only displayed when verbose is enabled')
+//=> noisy log only displayed when verbose is enabled
+
 logger.dbError('custom log for database errors')
+//=> 🗄  custom log for database errors
 ```
 
-Output:
-
-```
-some info
-⚠️ a warning
-❌ an error
-noisy log only displayed when verbose is enabled
-🗄 custom log for database errors
-```
-
-## Properties of roosevelt-logger module
-
-In addition to the constructor, `roosevelt-logger` exposes the following properties:
+## Instance properties exposed by roosevelt-logger
 
 ### .winston()
 
@@ -177,7 +175,7 @@ Programmatically create a new logger method.
   logger.createLogMethod({
     name: 'dbError',
     type: 'error'
-    prefix: '💥 ',
+    prefix: '💥',
     color: 'red'
   })
 

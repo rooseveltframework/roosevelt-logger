@@ -55,11 +55,10 @@ class Logger {
 
     // iterate over methods and bind each one to this class
     for (let key in methods) {
-      let { enablePrefix } = globals
       let { enable, type, prefix, color } = methods[key]
 
       this[key] = function (...args) {
-        this._createLog(args, enable, enablePrefix, prefix, color, type)
+        this._createLog(args, enable, globals.enablePrefix, prefix, color, type)
       }
     }
 
@@ -108,14 +107,14 @@ class Logger {
    * Disable logging prefix
    */
   disablePrefix () {
-    this.params.enablePrefix = false
+    this.params.params.enablePrefix = false
   }
 
   /**
    * Enable logging prefix
    */
   enablePrefix () {
-    this.params.enablePrefix = true
+    this.params.params.enablePrefix = true
   }
 
   /**
@@ -210,8 +209,18 @@ function setParams (params) {
     newParams.params.enablePrefix = defaults.params.enablePrefix
   }
 
-  // disable prefix via node env
-  if (process.env['ROOSEVELT_LOGGER_ENABLE_PREFIX'] === 'false') {
+  /**
+   * Disable prefixes in windows by default
+   * See: https://github.com/rooseveltframework/roosevelt-logger/issues/34 for more details
+   */
+  if (process.platform === 'win32') {
+    newParams.params.enablePrefix = false
+  }
+
+  // toggle prefix based on env
+  if (process.env['ROOSEVELT_LOGGER_ENABLE_PREFIX'] === 'true') {
+    newParams.params.enablePrefix = true
+  } else if (process.env['ROOSEVELT_LOGGER_ENABLE_PREFIX'] === 'false') {
     newParams.params.enablePrefix = false
   }
 

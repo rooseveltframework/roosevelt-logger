@@ -1,4 +1,4 @@
-// Require logger
+// require logger
 const Logger = require('../../logger')
 const logger = new Logger({
   params: {
@@ -7,6 +7,6 @@ const logger = new Logger({
   }
 })
 
-// Output a test log with and without a prefix
+// output a test log with and without a prefix
 logger.log('Test Log')
 logger.warn('Test Warning Log')
