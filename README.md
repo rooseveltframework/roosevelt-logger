@@ -136,7 +136,7 @@ The [Winston](https://www.npmjs.com/package/winston) module that `roosevelt-logg
 
 ### .winstonInstance
 
-The specific [Winston](https://www.npmjs.com/package/winston) object instance instantiated by `roosevelt-logger`.\
+The specific [Winston](https://www.npmjs.com/package/winston) object instance instantiated by `roosevelt-logger`.
 
 ### .transports
 
