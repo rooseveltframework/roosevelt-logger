@@ -1,28 +1,32 @@
 {
-  "info": {
-    "type": "info",
-    "enable": true,
-    "prefix": false,
-    "color": false
+  "methods": {
+    "info": {
+      "type": "info",
+      "enable": true,
+      "prefix": false,
+      "color": false
+    },
+    "warn": {
+      "type": "warn",
+      "enable": true,
+      "prefix": "⚠️ ",
+      "color": "yellow"
+    },
+    "error": {
+      "type": "error",
+      "enable": true,
+      "prefix": "❌",
+      "color": "red"
+    },
+    "verbose": {
+      "type": "info",
+      "enable": false,
+      "prefix": false,
+      "color": false
+    }
   },
-  "warn": {
-    "type": "warn",
-    "enable": true,
-    "prefix": "⚠️ ",
-    "color": "yellow"
-  },
-  "error": {
-    "type": "error",
-    "enable": true,
-    "prefix": "❌",
-    "color": "red"
-  },
-  "verbose": {
-    "type": "info",
-    "enable": false,
-    "prefix": false,
-    "color": false
-  },
-  "enablePrefix": true,
-  "disable": []
+  "params": {
+    "enablePrefix": true,
+    "disable": []
+  }
 }

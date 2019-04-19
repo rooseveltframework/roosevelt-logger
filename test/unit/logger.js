@@ -4,53 +4,68 @@ const assert = require('assert')
 const { fork } = require('child_process')
 const path = require('path')
 const util = require('util')
+const Logger = require('../../logger')
 
 describe('Logger Tests', function () {
-  // Parameters to pass to the logger
+  /**
+   * Thanks to https://github.com/rooseveltframework/roosevelt-logger/issues/34
+   * It's necessary to spoof the platform across all tests to prevent them from being polluted by windows
+   */
+  before(function () {
+    Object.defineProperty(process, 'platform', {
+      value: 'linux'
+    })
+  })
+
+  // parameters to pass to the logger
   let configs = {
-    'info': 'badparam',
-    'warn': true,
-    'verbose': {
-      'type': 'info',
-      'enable': true,
-      'prefix': false,
-      'color': false
+    methods: {
+      'info': 'badparam',
+      'warn': true,
+      'verbose': {
+        'type': 'info',
+        'enable': true,
+        'prefix': false,
+        'color': false
+      },
+      'error': {
+        'type': undefined,
+        'enable': undefined,
+        'prefix': undefined,
+        'color': undefined
+      },
+      'custom1': true,
+      'custom2': {
+        'type': 'info',
+        'prefix': true,
+        'color': false
+      },
+      'custom3': {
+        'enable': true
+      },
+      'custom4': {
+        'enable': true,
+        'type': 'error'
+      },
+      'custom5': {
+        'enable': false
+      },
+      'custom6': {
+        'type': 'warn'
+      },
+      'custom7': {
+        'type': 'info',
+        'prefix': '🍕',
+        'enable': true,
+        'color': false
+      },
+      'custom8': false,
+      'custom9': 'badvalue'
     },
-    'error': {
-      'type': undefined,
-      'enable': undefined,
-      'prefix': undefined,
-      'color': undefined
-    },
-    'enablePrefix': 'default',
-    'custom1': true,
-    'custom2': {
-      'type': 'info',
-      'prefix': true,
-      'color': false
-    },
-    'custom3': {
-      'enable': true
-    },
-    'custom4': {
-      'enable': true,
-      'type': 'error'
-    },
-    'custom5': {
-      'enable': false
-    },
-    'custom6': {
-      'type': 'warn'
-    },
-    'custom7': {
-      'type': 'info',
-      'prefix': '🍕',
-      'enable': true,
-      'color': false
-    },
-    'custom8': false,
-    'custom9': 'badvalue',
-    'disable': null
+    params: {
+      'enablePrefix': 'default',
+      'disable': null
+    }
   }
 
   // hook for stdout and stderr streams
@@ -67,8 +82,8 @@ describe('Logger Tests', function () {
   }
 
   it('should initialize a logger and test many different logs', function (done) {
-    // require the logger for this test
-    const logger = require('../../logger')(configs)
+    // instantiate the logger for this test
+    const logger = new Logger(configs)
 
     // variable to store the logs
     let logs = []
@@ -135,8 +150,8 @@ describe('Logger Tests', function () {
   })
 
   it('should use the defaults if no logging params are passed in', function (done) {
-    // require the logger for this test
-    const logger = require('../../logger')()
+    // instantiate the logger for this test
+    const logger = new Logger()
 
     // variable to store the logs
     let logs = []
@@ -175,8 +190,8 @@ describe('Logger Tests', function () {
   })
 
   it('should handle empty logs and other data types', function (done) {
-    // require the logger for this test
-    const logger = require('../../logger')()
+    // instantiate the logger for this test
+    const logger = new Logger()
 
     // variable to store the logs
     let logs = []
@@ -208,9 +223,9 @@ describe('Logger Tests', function () {
   })
 
   it('Should remove prefixes when enablePrefix is set to false', function (done) {
-    // require the logger for this test
+    // instantiate the logger for this test
     configs.enablePrefix = false
-    const logger = require('../../logger')(configs)
+    const logger = new Logger(configs)
 
     // variable to store the logs
     let logs = []
@@ -272,20 +287,6 @@ describe('Logger Tests', function () {
     })
   })
 
-  it('Should disable logs if disable is set to [\'test1\'] and process.env.test1 = true', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'test1': true } })
-
-    forkedLogger.stdout.on('data', data => {
-      if (data.includes('Test Log')) {
-        assert.fail('Logs were not disabled if process.env.test1 = true')
-      }
-    })
-
-    forkedLogger.on('exit', () => {
-      done()
-    })
-  })
-
   it('Should disable logs if disable is set to [\'test2\'] and process.env.test2 = \'true\'', function (done) {
     const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'test2': 'true' } })
 
@@ -310,6 +311,134 @@ describe('Logger Tests', function () {
     })
 
     forkedLogger.on('exit', () => {
+      done()
+    })
+  })
+
+  it('Should disable logs via logger.disableLogging method and enable logs via logger.enableLogging method', function (done) {
+    // instantiate the logger for this test
+    const logger = new Logger()
+
+    // variable to store the logs
+    let logs = []
+    // hook up standard output
+    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+      logs.push(string)
+    })
+
+    // disable logging
+    logger.disableLogging()
+
+    // testing log
+    logger.log('This log should not be seen')
+
+    // re-enable logging
+    logger.enableLogging()
+
+    // testing log
+    logger.log('This log should be seen')
+
+    // unhook stdout
+    unhookStdout()
+
+    // log assertions
+    assert.strictEqual(logs.length === 1, true, 'The logger failed to disable logging')
+    assert.strictEqual(logs[0].includes('This log should be seen'), true, 'The logger failed to enable logging')
+
+    // exit test
+    done()
+  })
+
+  it('Should disable prefix via logger.disablePrefix method and enable prefix via logger.enablePrefix method', function (done) {
+    // instantiate the logger for this test
+    const logger = new Logger()
+
+    // variable to store the logs
+    let errors = []
+    // hook up standard output
+    let unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+      errors.push(string)
+    })
+
+    // disable prefix
+    logger.disablePrefix()
+
+    // testing log
+    logger.warn('This prefix should not be seen')
+
+    // re-enable prefix
+    logger.enablePrefix()
+
+    // testing log
+    logger.warn('This prefix should be seen')
+
+    // unhook stdout
+    unhookStderr()
+
+    // log assertions
+    assert.strictEqual(errors[0].includes('⚠️'), false, 'The logger failed to disable the prefix')
+    assert.strictEqual(errors[1].includes('⚠️'), true, 'The logger failed to enable the prefix')
+
+    // exit test
+    done()
+  })
+
+  it('Should create a new functional log type via logger.createLogMethod method', function (done) {
+    // instantiate the logger for this test
+    const logger = new Logger()
+
+    // variable to store the logs
+    let logs = []
+    let errors = []
+
+    // hook up standard output/errors
+    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+      logs.push(string)
+    })
+    let unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+      errors.push(string)
+    })
+
+    // programmatically generate a new log type
+    logger.createLogMethod({
+      name: 'test',
+      type: 'info'
+    })
+
+    // test out the new log type
+    logger.test('This is a test')
+
+    // generate another new invalid log type
+    logger.createLogMethod({
+      type: 'info'
+    })
+
+    // unhook stdout
+    unhookStdout()
+    unhookStderr()
+
+    // log assertions
+    assert.strictEqual(logs[0].includes('This is a test'), true, 'The logger failed to log with the new log type')
+    assert.strictEqual(errors[0].includes('Must be type string.'), true, 'The logger attempted to create invalid log type')
+
+    // exit test
+    done()
+  })
+
+  it('Should disable log prefix by default in windows and allow override via ROOSEVELT_LOGGER_ENABLE_PREFIX env and logger.enablePrefix method', function (done) {
+    let logs = []
+    const forkedLogger = fork(path.join(__dirname, '../util/windowsFork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'] })
+
+    forkedLogger.stderr.on('data', data => {
+      // push each log to an array
+      logs.push(data.toString())
+    })
+
+    forkedLogger.on('exit', () => {
+      // log assertions
+      assert.strictEqual(logs[0].includes('⚠️'), false, 'The logger failed to disable prefixes in windows by default')
+      assert.strictEqual(logs[1].includes('⚠️'), true, 'The logger failed to enable prefix via enablePrefix()')
+      assert.strictEqual(logs[2].includes('⚠️'), true, 'The logger failed to enable prefix via env')
       done()
     })
   })
