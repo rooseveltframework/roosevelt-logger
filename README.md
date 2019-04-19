@@ -163,7 +163,7 @@ Programmatically disable all log prefixes.
 Programmatically create a new logger method.
 
 - API:
-  - `name` *[String]*: New Logger method name.
+  - `name` *[String]*: New logger method name.
   - `type` *[String]*: What type of native log this custom log maps to.
     - Default: `info`.
     - Allowed values: `info`, `warn`, or `error`.
