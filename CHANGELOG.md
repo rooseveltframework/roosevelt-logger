@@ -2,12 +2,16 @@
 
 ## Next version
 
-- Full module refactor.
-- Change to class based instantiation.
-  - Add `enableLogger()` and `disableLogger()` methods.
-  - Add `enablePrefix()` and `disablePrefix()` methods.
-  - Add `createLogMethod()` method.
-- Overhaul API
+- Put your changes here...
+
+## 0.2.0
+
+- Module fully refactored, including some breaking API changes, such as:
+  - Changed to class-based instantiation:
+    - Added `enableLogger()` and `disableLogger()` methods.
+    - Added `enablePrefix()` and `disablePrefix()` methods.
+    - Added `createLogMethod()` method.
+  - Other smaller changes to the API as well. See README.
 
 ## 0.1.0
 

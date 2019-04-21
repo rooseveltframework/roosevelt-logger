@@ -4,10 +4,11 @@
   "author": "Roosevelt Framework Team <rooseveltframework@gmail.com>",
   "contributors": [
     "Eric Newport <kethinov@gmail.com>",
+    "Troy Coutu <autre31415@gmail.com>",
     "Benjamin Lannon <benjamin@lannonbr.com>",
     "Michael Mulligan <mkmllgn@gmail.com>"
   ],
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/rooseveltframework/roosevelt-logger",
   "license": "CC-BY-4.0",
   "main": "logger.js",

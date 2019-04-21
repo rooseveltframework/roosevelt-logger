@@ -6,7 +6,7 @@ const path = require('path')
 const util = require('util')
 const Logger = require('../../logger')
 
-describe('Logger Tests', function () {
+describe('roosevelt-logger', function () {
   /**
    * Thanks to https://github.com/rooseveltframework/roosevelt-logger/issues/34
    * It's necessary to spoof the platform across all tests to prevent them from being polluted by windows
@@ -222,7 +222,7 @@ describe('Logger Tests', function () {
     done()
   })
 
-  it('Should remove prefixes when enablePrefix is set to false', function (done) {
+  it('should remove prefixes when enablePrefix is set to false', function (done) {
     // instantiate the logger for this test
     configs.enablePrefix = false
     const logger = new Logger(configs)
@@ -273,7 +273,7 @@ describe('Logger Tests', function () {
     done()
   })
 
-  it('Should disable logs in production mode if disable is set to [\'production\']', function (done) {
+  it('should disable logs in production mode if disable is set to [\'production\']', function (done) {
     const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'NODE_ENV': 'production' } })
 
     forkedLogger.stdout.on('data', data => {
@@ -287,7 +287,7 @@ describe('Logger Tests', function () {
     })
   })
 
-  it('Should disable logs if disable is set to [\'test2\'] and process.env.test2 = \'true\'', function (done) {
+  it('should disable logs if disable is set to [\'test2\'] and process.env.test2 = \'true\'', function (done) {
     const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'test2': 'true' } })
 
     forkedLogger.stdout.on('data', data => {
@@ -301,7 +301,7 @@ describe('Logger Tests', function () {
     })
   })
 
-  it('Should disable log prefix if process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'', function (done) {
+  it('should disable log prefix if process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'', function (done) {
     const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'ROOSEVELT_LOGGER_ENABLE_PREFIX': false } })
 
     forkedLogger.stderr.on('data', data => {
@@ -315,7 +315,7 @@ describe('Logger Tests', function () {
     })
   })
 
-  it('Should disable logs via logger.disableLogging method and enable logs via logger.enableLogging method', function (done) {
+  it('should disable logs via logger.disableLogging method and enable logs via logger.enableLogging method', function (done) {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -349,7 +349,7 @@ describe('Logger Tests', function () {
     done()
   })
 
-  it('Should disable prefix via logger.disablePrefix method and enable prefix via logger.enablePrefix method', function (done) {
+  it('should disable prefix via logger.disablePrefix method and enable prefix via logger.enablePrefix method', function (done) {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -383,7 +383,7 @@ describe('Logger Tests', function () {
     done()
   })
 
-  it('Should create a new functional log type via logger.createLogMethod method', function (done) {
+  it('should create a new functional log type via logger.createLogMethod method', function (done) {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -425,7 +425,7 @@ describe('Logger Tests', function () {
     done()
   })
 
-  it('Should disable log prefix by default in windows and allow override via ROOSEVELT_LOGGER_ENABLE_PREFIX env and logger.enablePrefix method', function (done) {
+  it('should disable log prefix by default in windows and allow override via ROOSEVELT_LOGGER_ENABLE_PREFIX env and logger.enablePrefix method', function (done) {
     let logs = []
     const forkedLogger = fork(path.join(__dirname, '../util/windowsFork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'] })
 
