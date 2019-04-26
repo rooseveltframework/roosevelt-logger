@@ -1,4 +1,5 @@
 require('colors')
+const emoji = require('node-emoji')
 const util = require('util')
 const winston = require('winston')
 const colors = require('colors/safe')
@@ -164,16 +165,27 @@ function argumentsToString (input, enablePrefix, prefix) {
   let str = ''
   let args = Object.values(input)
 
-  // logic to check if first arg is a prefix
-  if (enablePrefix && typeof args[0] === 'string' && args.length > 1) {
-    // custom prefix
-    str += args[0] + '  '
-  } else if (enablePrefix && prefix && prefix.length > 0) {
-    // defualt prefix
+  // determine if first arg is a prefix
+  if (typeof args[0] === 'string' && args[0].trim() === prefix) {
+    // first arg is the prefix, add it when enabled
+    if (enablePrefix) {
+      str += args[0].trim() + '  '
+    }
+  } else if (typeof args[0] === 'string' && emoji.which(args[0].trim())) {
+    // first arg is an emoji, add it as a prefix when enabled
+    if (enablePrefix) {
+      str += args[0].trim() + '  '
+    }
+  } else if (prefix && prefix.length > 0) {
+    // first arg is not a prefix and prefix is set, add prefix when enabled
     let arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
-    str += prefix + '  ' + arg0
-  } else if (args.length === 1) {
-    // no prefix
+    if (enablePrefix) {
+      str += prefix + '  ' + arg0
+    } else {
+      str += arg0 + ' '
+    }
+  } else {
+    // no prefix configured or in use
     let arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
     str += arg0 + ' '
   }

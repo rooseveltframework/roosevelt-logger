@@ -20,51 +20,56 @@ describe('roosevelt-logger', function () {
   // parameters to pass to the logger
   let configs = {
     methods: {
-      'info': 'badparam',
-      'warn': true,
-      'verbose': {
-        'type': 'info',
-        'enable': true,
-        'prefix': false,
-        'color': false
+      info: 'badparam',
+      warn: true,
+      verbose: {
+        type: 'info',
+        enable: true,
+        prefix: false,
+        color: false
       },
-      'error': {
-        'type': undefined,
-        'enable': undefined,
-        'prefix': undefined,
-        'color': undefined
+      error: {
+        type: undefined,
+        enable: undefined,
+        prefix: undefined,
+        color: undefined
       },
-      'custom1': true,
-      'custom2': {
-        'type': 'info',
-        'prefix': true,
-        'color': false
+      custom1: true,
+      custom2: {
+        type: 'info',
+        prefix: true,
+        color: false
       },
-      'custom3': {
-        'enable': true
+      custom3: {
+        enable: true
       },
-      'custom4': {
-        'enable': true,
-        'type': 'error'
+      custom4: {
+        enable: true,
+        type: 'error'
       },
-      'custom5': {
-        'enable': false
+      custom5: {
+        enable: false
       },
-      'custom6': {
-        'type': 'warn'
+      custom6: {
+        type: 'warn'
       },
-      'custom7': {
-        'type': 'info',
-        'prefix': '🍕',
-        'enable': true,
-        'color': false
+      custom7: {
+        type: 'info',
+        prefix: '🍕',
+        enable: true,
+        color: false
       },
-      'custom8': false,
-      'custom9': 'badvalue'
+      custom8: false,
+      custom9: 'badvalue',
+      custom10: {
+        type: 'info',
+        enable: true,
+        prefix: '🍪'
+      }
     },
     params: {
-      'enablePrefix': 'default',
-      'disable': null
+      enablePrefix: 'default',
+      disable: null
     }
   }
 
@@ -107,6 +112,7 @@ describe('roosevelt-logger', function () {
     logger.log({ 'this': 'is an object' })
     logger.log('🍕', { 'this': 'is an object' })
     logger.custom7({ 'this': 'is an object' })
+    logger.custom10('🍪 ', 'This log doubles down on the prefix')
 
     // error logs
     logger.error('This should have an emoji prefix')
@@ -115,7 +121,6 @@ describe('roosevelt-logger', function () {
 
     // disabled logs
     logger.custom5('Should not have an output 1')
-    logger.custom6('Should not have an output 2')
 
     // unhook stdout
     unhookStdout()
@@ -131,6 +136,7 @@ describe('roosevelt-logger', function () {
     assert.strictEqual(logs[6].includes(util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The logger did not output an object')
     assert.strictEqual(logs[7].includes('🍕  ' + util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The logger did not output an object with pizza prefix')
     assert.strictEqual(logs[8].includes('🍕  ' + util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The custom logger did not output an object with pizza prefix by default')
+    assert.strictEqual(logs[9].includes('🍪  This log doubles down on the prefix'), true, 'The logger failed to handle a redundant prefix')
 
     // error log assertions
     assert.strictEqual(errors[0].includes('❌  This should have an emoji prefix'), true, 'The logger did not automatically add an emoji to the error log')
@@ -138,11 +144,8 @@ describe('roosevelt-logger', function () {
     assert.strictEqual(errors[2].includes('❤️  This should not add a prefix because one is already there'), true, 'The logger added an emoji prefix')
 
     // disabled log assertions
-    if (typeof logs[9] !== 'undefined') {
-      assert.fail('logger.custom5 output a log even though the log type is disabled')
-    }
     if (typeof logs[10] !== 'undefined') {
-      assert.fail('logger.custom6 output a log even though the log type is disabled')
+      assert.fail('logger.custom5 output a log even though the log type is disabled')
     }
 
     // exit test
@@ -224,7 +227,7 @@ describe('roosevelt-logger', function () {
 
   it('should remove prefixes when enablePrefix is set to false', function (done) {
     // instantiate the logger for this test
-    configs.enablePrefix = false
+    configs.params.enablePrefix = false
     const logger = new Logger(configs)
 
     // variable to store the logs
@@ -240,17 +243,15 @@ describe('roosevelt-logger', function () {
     })
 
     // standard logs
-    logger.log('🍕 Test Log')
     logger.verbose('❤️', 'Test Verbose')
 
     // custom logs
-    logger.custom1('🍕 Custom1')
     logger.custom2('❤️', 'Custom2')
+    logger.custom10('🍪 ', 'Custom10')
 
     // error logs
     logger.error('Error Log')
     logger.warn('Warning Log')
-    logger.error('🍕 Error Log')
     logger.warn('❤️', 'Warning Log')
 
     // unhook stdout
@@ -258,16 +259,14 @@ describe('roosevelt-logger', function () {
     unhookStderr()
 
     // standard log assertions
-    assert.strictEqual(logs[0].includes('Test Log'), true, 'The logger did not remove the emoji in logger.log()')
-    assert.strictEqual(logs[1].includes('Test Verbose'), true, 'The logger did not remove the emoji in logger.verbose()')
-    assert.strictEqual(logs[2].includes('Custom1'), true, 'The logger did not remove the emoji in logger.custom1()')
-    assert.strictEqual(logs[3].includes('Custom2'), true, 'The logger did not remove the emoji in logger.custom2()')
+    assert.strictEqual(logs[0].includes('❤️'), false, 'The logger did not remove the emoji in logger.verbose()')
+    assert.strictEqual(logs[1].includes('❤️'), false, 'The logger did not remove the emoji in logger.custom2()')
+    assert.strictEqual(logs[2].includes('🍪'), false, 'The logger did not remove the emoji in logger.custom10()')
 
     // error log assertions
-    assert.strictEqual(errors[0].includes('Error Log'), true, 'The logger did not remove the emoji in logger.error()')
-    assert.strictEqual(errors[1].includes('Warning Log'), true, 'The logger did not remove the emoji in logger.warn()')
-    assert.strictEqual(errors[2].includes('Error Log'), true, 'The logger did not remove the emoji in logger.error()')
-    assert.strictEqual(errors[3].includes('Warning Log'), true, 'The logger did not remove the emoji in logger.warn()')
+    assert.strictEqual(errors[0].includes('❌'), false, 'The logger did not remove the emoji in logger.error()')
+    assert.strictEqual(errors[1].includes('⚠️'), false, 'The logger did not remove the emoji in logger.warn()')
+    assert.strictEqual(errors[2].includes('❤️'), false, 'The logger did not remove the emoji in logger.warn()')
 
     // exit test
     done()
