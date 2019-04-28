@@ -4,6 +4,12 @@
 
 - Put your changes here...
 
+## 0.2.1
+
+- Fixed bug where disabling prefix would chop off more than the prefix.
+- CI improvements.
+- Various dependencies bumped.
+
 ## 0.2.0
 
 - Module fully refactored, including some breaking API changes, such as:
