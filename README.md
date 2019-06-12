@@ -102,12 +102,16 @@ Require the package into your application and call its constructor:
 
 ```js
 const logger = require('roosevelt-logger')({
-    verbose: true, // enables verbose logging
-    dbError: {     // create custom error called dbError
-        type: 'error',
-        prefix: '🗄'
+    methods: {
+      verbose: true, // enables verbose logging
+      dbError: {     // create custom error called dbError
+          type: 'error',
+          prefix: '🗄'
+      }
+    },
+    params: {
+      disable: ['LOADED_MOCHA_OPTS'] // disable logging during Mocha tests
     }
-    disable: ['LOADED_MOCHA_OPTS'] // disable logging during Mocha tests
 })
 
 logger.log('some info')
