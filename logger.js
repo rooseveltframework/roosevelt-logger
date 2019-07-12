@@ -19,8 +19,8 @@ class Logger {
     // bind parameters
     this.params = setParams(params)
     params = this.params
-    let globals = params.params
-    let methods = params.methods
+    const globals = params.params
+    const methods = params.methods
 
     // transports object to easily override settings
     const transports = {
@@ -47,7 +47,7 @@ class Logger {
     this.transports = transports
 
     // iterate over global disable array
-    for (let env in globals.disable) {
+    for (const env in globals.disable) {
       // if the arg is set to true/"true" in process.env or it's the env in process.env.NODE_ENV, suppress all logs
       if (process.env.NODE_ENV === globals.disable[env] || process.env[globals.disable[env]] === 'true') {
         transports.console.silent = true
@@ -55,8 +55,8 @@ class Logger {
     }
 
     // iterate over methods and bind each one to this class
-    for (let key in methods) {
-      let { enable, type, prefix, color } = methods[key]
+    for (const key in methods) {
+      const { enable, type, prefix, color } = methods[key]
 
       this[key] = function (...args) {
         this._createLog(args, enable, globals.enablePrefix, prefix, color, type)
@@ -80,7 +80,7 @@ class Logger {
     // log if the param is set to true
     if (enable !== 'false' && enable !== false) {
       // parse the log arguments
-      let logs = argumentsToString(args, enablePrefix, prefix)
+      const logs = argumentsToString(args, enablePrefix, prefix)
       // send the log level and message to winston for logging
       if (color === false) {
         this.winstonInstance.log({ level: type, message: logs })
@@ -123,7 +123,7 @@ class Logger {
    * @param {object} params - Configuration for new logger method
    */
   createLogMethod (params) {
-    let name = params.name
+    const name = params.name
 
     // validate that the method name is a string
     if (!name || typeof name !== 'string') {
@@ -133,7 +133,7 @@ class Logger {
 
     // validate and sanitize config
     params = validateLoggerMethod(name, params)
-    let { type, prefix, color } = params
+    const { type, prefix, color } = params
 
     // bind new logger type to logger config
     this.params[name] = {
@@ -163,7 +163,7 @@ class Logger {
  */
 function argumentsToString (input, enablePrefix, prefix) {
   let str = ''
-  let args = Object.values(input)
+  const args = Object.values(input)
 
   // determine if first arg is a prefix
   if (typeof args[0] === 'string' && args[0].trim() === prefix) {
@@ -178,7 +178,7 @@ function argumentsToString (input, enablePrefix, prefix) {
     }
   } else if (prefix && prefix.length > 0) {
     // first arg is not a prefix and prefix is set, add prefix when enabled
-    let arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
+    const arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
     if (enablePrefix) {
       str += prefix + '  ' + arg0
     } else {
@@ -186,14 +186,14 @@ function argumentsToString (input, enablePrefix, prefix) {
     }
   } else {
     // no prefix configured or in use
-    let arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
+    const arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
     str += arg0 + ' '
   }
 
   // print out remaining args
-  let rest = args.slice(1)
-  for (let k in rest) {
-    let arg = (typeof rest[k] === 'string') ? rest[k] : util.inspect(rest[k], false, null, false)
+  const rest = args.slice(1)
+  for (const k in rest) {
+    const arg = (typeof rest[k] === 'string') ? rest[k] : util.inspect(rest[k], false, null, false)
     str += arg + ' '
   }
   return str.trimRight()
@@ -211,11 +211,11 @@ function setParams (params) {
     params: {}
   }
 
-  let globals = params.params || {}
-  let methods = params.methods || {}
+  const globals = params.params || {}
+  const methods = params.methods || {}
 
   // sanitize enablePrefix param
-  if (globals.hasOwnProperty('enablePrefix')) {
+  if (Object.prototype.hasOwnProperty.call(globals, 'enablePrefix')) {
     newParams.params.enablePrefix = typeof globals.enablePrefix === 'boolean' ? globals.enablePrefix : defaults.params.enablePrefix
   } else {
     newParams.params.enablePrefix = defaults.params.enablePrefix
@@ -237,14 +237,14 @@ function setParams (params) {
   }
 
   // sanitize disable param
-  if (globals.hasOwnProperty('disable')) {
+  if (Object.prototype.hasOwnProperty.call(globals, 'disable')) {
     newParams.params.disable = Array.isArray(globals.disable) ? globals.disable : defaults.params.disable
   } else {
     newParams.params.disable = defaults.params.disable
   }
 
   // loop through and validate configured methods
-  for (let key in methods) {
+  for (const key in methods) {
     // this if statement ensures that the method object doesn't get polluted by invalid params
     if (validateLoggerMethod(key, methods[key])) {
       newParams.methods[key] = validateLoggerMethod(key, methods[key])
@@ -252,7 +252,7 @@ function setParams (params) {
   }
 
   // loop defaults to make sure the newParams contains all default log types
-  for (let key in defaults.methods) {
+  for (const key in defaults.methods) {
     if (newParams.methods[key] === undefined) {
       newParams.methods[key] = defaults.methods[key]
     }
@@ -273,7 +273,7 @@ function validateLoggerMethod (method, params) {
   if (defaults.methods[method]) {
     // sanitize the params on a default method
     if (typeof params === 'object') {
-      let { type, enable, prefix, color } = params
+      const { type, enable, prefix, color } = params
       sanitizedConfig = {}
       sanitizedConfig.type = validateType(type) ? type : defaults.methods[method].type
       sanitizedConfig.enable = validateEnable(enable) ? enable : defaults.methods[method].enable
@@ -289,14 +289,14 @@ function validateLoggerMethod (method, params) {
   } else {
     // sanitize the params on a custom method
     if (typeof params === 'object') {
-      let { type, enable, prefix, color } = params
+      const { type, enable, prefix, color } = params
       sanitizedConfig = {}
       sanitizedConfig.type = validateType(type) ? type : 'info'
       sanitizedConfig.enable = validateEnable(enable) ? enable : true
       sanitizedConfig.prefix = sanitizePrefix(prefix, sanitizedConfig.type)
       sanitizedConfig.color = sanitizeColor(color, sanitizedConfig.type)
     } else if (typeof params === 'boolean') {
-      let { prefix, color } = params
+      const { prefix, color } = params
       sanitizedConfig = {}
       sanitizedConfig.type = 'info'
       sanitizedConfig.enable = params
@@ -331,7 +331,7 @@ function validateEnable (enableBool) {
  */
 function sanitizePrefix (prefix, type) {
   // check prefix validity
-  let validPrefix = prefix !== undefined && (typeof prefix === 'string' || typeof prefix === 'boolean')
+  const validPrefix = prefix !== undefined && (typeof prefix === 'string' || typeof prefix === 'boolean')
 
   // set to a default if invalid
   if (!validPrefix) {
@@ -357,7 +357,7 @@ function sanitizePrefix (prefix, type) {
  */
 function sanitizeColor (color, type) {
   // check color validity
-  let validColor = color !== undefined && (typeof color === 'string' || typeof color === 'boolean')
+  const validColor = color !== undefined && (typeof color === 'string' || typeof color === 'boolean')
 
   // set to a default if invalid
   if (!validColor) {

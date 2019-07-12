@@ -18,7 +18,7 @@ describe('roosevelt-logger', function () {
   })
 
   // parameters to pass to the logger
-  let configs = {
+  const configs = {
     methods: {
       info: 'badparam',
       warn: true,
@@ -74,9 +74,9 @@ describe('roosevelt-logger', function () {
   }
 
   // hook for stdout and stderr streams
-  let hookStream = function (_stream, fn) {
+  const hookStream = function (_stream, fn) {
     // reference default write method
-    let oldWrite = _stream.write
+    const oldWrite = _stream.write
     // _stream now write with our shiny function
     _stream.write = fn
 
@@ -91,14 +91,14 @@ describe('roosevelt-logger', function () {
     const logger = new Logger(configs)
 
     // variable to store the logs
-    let logs = []
-    let errors = []
+    const logs = []
+    const errors = []
 
     // hook up standard output/errors
-    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+    const unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
       logs.push(string)
     })
-    let unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+    const unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
       errors.push(string)
     })
 
@@ -109,9 +109,9 @@ describe('roosevelt-logger', function () {
     logger.custom1('Should be of type info')
     logger.custom2('Single object key type param')
     logger.custom3('Single object key enabled param')
-    logger.log({ 'this': 'is an object' })
-    logger.log('🍕', { 'this': 'is an object' })
-    logger.custom7({ 'this': 'is an object' })
+    logger.log({ this: 'is an object' })
+    logger.log('🍕', { this: 'is an object' })
+    logger.custom7({ this: 'is an object' })
     logger.custom10('🍪 ', 'This log doubles down on the prefix')
 
     // error logs
@@ -133,9 +133,9 @@ describe('roosevelt-logger', function () {
     assert.strictEqual(logs[3].includes('Should be of type info'), true, 'The logger did not output a custom log')
     assert.strictEqual(logs[4].includes('Single object key type param'), true, 'The logger did not output a custom log')
     assert.strictEqual(logs[5].includes('Single object key enabled param'), true, 'The logger did not output a custom log')
-    assert.strictEqual(logs[6].includes(util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The logger did not output an object')
-    assert.strictEqual(logs[7].includes('🍕  ' + util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The logger did not output an object with pizza prefix')
-    assert.strictEqual(logs[8].includes('🍕  ' + util.inspect({ 'this': 'is an object' }, false, null, false)), true, 'The custom logger did not output an object with pizza prefix by default')
+    assert.strictEqual(logs[6].includes(util.inspect({ this: 'is an object' }, false, null, false)), true, 'The logger did not output an object')
+    assert.strictEqual(logs[7].includes('🍕  ' + util.inspect({ this: 'is an object' }, false, null, false)), true, 'The logger did not output an object with pizza prefix')
+    assert.strictEqual(logs[8].includes('🍕  ' + util.inspect({ this: 'is an object' }, false, null, false)), true, 'The custom logger did not output an object with pizza prefix by default')
     assert.strictEqual(logs[9].includes('🍪  This log doubles down on the prefix'), true, 'The logger failed to handle a redundant prefix')
 
     // error log assertions
@@ -157,14 +157,14 @@ describe('roosevelt-logger', function () {
     const logger = new Logger()
 
     // variable to store the logs
-    let logs = []
-    let errors = []
+    const logs = []
+    const errors = []
 
     // hook up standard output/errors
-    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+    const unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
       logs.push(string)
     })
-    let unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+    const unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
       errors.push(string)
     })
 
@@ -197,9 +197,9 @@ describe('roosevelt-logger', function () {
     const logger = new Logger()
 
     // variable to store the logs
-    let logs = []
+    const logs = []
     // hook up standard output
-    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+    const unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
       logs.push(string)
     })
 
@@ -207,7 +207,7 @@ describe('roosevelt-logger', function () {
     logger.log()
     logger.log('')
     logger.log(123)
-    logger.log({ 'key': 'value' })
+    logger.log({ key: 'value' })
     logger.log(['array'])
 
     // unhook stdout
@@ -219,7 +219,7 @@ describe('roosevelt-logger', function () {
     assert.strictEqual(logs[2].includes('123'), true, 'The logger did not output a number')
     // use inspect for objects
     assert.strictEqual(logs[3].includes('{ key: \'value\' }'), true, 'The logger did not output an object')
-    assert.strictEqual(logs[4].includes(util.inspect([ 'array' ], false, null, false)), true, 'The logger did not output an array')
+    assert.strictEqual(logs[4].includes(util.inspect(['array'], false, null, false)), true, 'The logger did not output an array')
 
     // exit test
     done()
@@ -231,14 +231,14 @@ describe('roosevelt-logger', function () {
     const logger = new Logger(configs)
 
     // variable to store the logs
-    let logs = []
-    let errors = []
+    const logs = []
+    const errors = []
 
     // hook up standard output/errors
-    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+    const unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
       logs.push(string)
     })
-    let unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+    const unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
       errors.push(string)
     })
 
@@ -273,7 +273,7 @@ describe('roosevelt-logger', function () {
   })
 
   it('should disable logs in production mode if disable is set to [\'production\']', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'NODE_ENV': 'production' } })
+    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'], env: { NODE_ENV: 'production' } })
 
     forkedLogger.stdout.on('data', data => {
       if (data.includes('Test Log')) {
@@ -287,7 +287,7 @@ describe('roosevelt-logger', function () {
   })
 
   it('should disable logs if disable is set to [\'test2\'] and process.env.test2 = \'true\'', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'test2': 'true' } })
+    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'], env: { test2: 'true' } })
 
     forkedLogger.stdout.on('data', data => {
       if (data.includes('Test Log')) {
@@ -301,7 +301,7 @@ describe('roosevelt-logger', function () {
   })
 
   it('should disable log prefix if process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'], 'env': { 'ROOSEVELT_LOGGER_ENABLE_PREFIX': false } })
+    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'], env: { ROOSEVELT_LOGGER_ENABLE_PREFIX: false } })
 
     forkedLogger.stderr.on('data', data => {
       if (data.includes('⚠️ Test Warning Log')) {
@@ -319,9 +319,9 @@ describe('roosevelt-logger', function () {
     const logger = new Logger()
 
     // variable to store the logs
-    let logs = []
+    const logs = []
     // hook up standard output
-    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+    const unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
       logs.push(string)
     })
 
@@ -353,9 +353,9 @@ describe('roosevelt-logger', function () {
     const logger = new Logger()
 
     // variable to store the logs
-    let errors = []
+    const errors = []
     // hook up standard output
-    let unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+    const unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
       errors.push(string)
     })
 
@@ -387,14 +387,14 @@ describe('roosevelt-logger', function () {
     const logger = new Logger()
 
     // variable to store the logs
-    let logs = []
-    let errors = []
+    const logs = []
+    const errors = []
 
     // hook up standard output/errors
-    let unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
+    const unhookStdout = hookStream(process.stdout, function (string, encoding, fd) {
       logs.push(string)
     })
-    let unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+    const unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
       errors.push(string)
     })
 
@@ -425,8 +425,8 @@ describe('roosevelt-logger', function () {
   })
 
   it('should disable log prefix by default in windows and allow override via ROOSEVELT_LOGGER_ENABLE_PREFIX env and logger.enablePrefix method', function (done) {
-    let logs = []
-    const forkedLogger = fork(path.join(__dirname, '../util/windowsFork.js'), [], { 'stdio': ['pipe', 'pipe', 'pipe', 'ipc'] })
+    const logs = []
+    const forkedLogger = fork(path.join(__dirname, '../util/windowsFork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] })
 
     forkedLogger.stderr.on('data', data => {
       // push each log to an array

@@ -2,7 +2,7 @@
 
 ## Next version
 
-- Put your changes here...
+- various dependencies bumped.
 
 ## 0.2.1
 
