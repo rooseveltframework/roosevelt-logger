@@ -29,7 +29,7 @@
     "lint-staged": "~9.2.0",
     "mocha": "~6.2.0",
     "nyc": "~14.1.1",
-    "standard": "~13.1.0"
+    "standard": "~14.0.0"
   },
   "eslintConfig": {
     "parserOptions": {
