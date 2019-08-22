@@ -230,9 +230,9 @@ function setParams (params) {
   }
 
   // toggle prefix based on env
-  if (process.env['ROOSEVELT_LOGGER_ENABLE_PREFIX'] === 'true') {
+  if (process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX === 'true') {
     newParams.params.enablePrefix = true
-  } else if (process.env['ROOSEVELT_LOGGER_ENABLE_PREFIX'] === 'false') {
+  } else if (process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX === 'false') {
     newParams.params.enablePrefix = false
   }
 
