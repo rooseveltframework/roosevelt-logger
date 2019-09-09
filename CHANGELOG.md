@@ -2,7 +2,14 @@
 
 ## Next version
 
-- various dependencies bumped.
+- Put your changes here...
+
+## 0.2.3
+
+- Fixed bug which caused whitespace at the end of a log to be removed.
+- Better docs
+- CI improvements.
+- Various dependencies bumped.
 
 ## 0.2.1
 
