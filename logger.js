@@ -196,7 +196,7 @@ function argumentsToString (input, enablePrefix, prefix) {
     const arg = (typeof rest[k] === 'string') ? rest[k] : util.inspect(rest[k], false, null, false)
     str += arg + ' '
   }
-  return str.trimRight()
+  return str
 }
 
 /**
