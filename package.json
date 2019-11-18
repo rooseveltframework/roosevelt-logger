@@ -21,17 +21,17 @@
   },
   "engineStrict": true,
   "dependencies": {
-    "colors": "1.4.0",
-    "node-emoji": "1.10.0",
-    "winston": "3.2.1"
+    "colors": "~1.4.0",
+    "node-emoji": "~1.10.0",
+    "winston": "~3.2.1"
   },
   "devDependencies": {
     "codecov": "~3.6.1",
     "eslint": "~6.6.0",
-    "eslint-plugin-mocha": "~6.2.0",
-    "husky": "~3.0.7",
-    "lint-staged": "~9.4.0",
-    "mocha": "~6.2.0",
+    "eslint-plugin-mocha": "~6.2.1",
+    "husky": "~3.1.0",
+    "lint-staged": "~9.4.3",
+    "mocha": "~6.2.2",
     "nyc": "~14.1.1",
     "standard": "~14.3.1"
   },
@@ -71,5 +71,9 @@
     "hooks": {
       "pre-commit": "lint-staged && eslint ./test"
     }
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/kethinov"
   }
 }
