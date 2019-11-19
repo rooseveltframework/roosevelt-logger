@@ -26,6 +26,7 @@
     "winston": "~3.2.1"
   },
   "devDependencies": {
+    "c8": "~6.0.1",
     "codecov": "~3.6.1",
     "eslint": "~6.6.0",
     "eslint-plugin-mocha": "~6.2.1",
@@ -54,10 +55,11 @@
     ]
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --recursive --timeout 10000 test/unit",
-    "test-debug": "./node_modules/.bin/mocha --inspect-brk --timeout 10000 test/unit",
+    "codecov": "./node_modules/.bin/codecov",
+    "coverage": "c8 --reporter=text --reporter=lcov mocha --timeout 25000 test/unit",
     "lint": "standard && eslint ./",
-    "coverage": "nyc ./node_modules/.bin/mocha --recursive --timeout 10000 test/unit"
+    "test": "./node_modules/.bin/mocha --recursive --timeout 10000 test/unit",
+    "test-debug": "./node_modules/.bin/mocha --inspect-brk --timeout 10000 test/unit"
   },
   "lint-staged": {
     "*.js": "standard"
