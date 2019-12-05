@@ -4,7 +4,7 @@
 
 - Put your changes here...
 
-## 0.2.3
+## 0.2.2
 
 - Fixed bug which caused whitespace at the end of a log to be removed.
 - Better docs.
