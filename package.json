@@ -28,12 +28,11 @@
   "devDependencies": {
     "c8": "~6.0.1",
     "codecov": "~3.6.1",
-    "eslint": "~6.6.0",
-    "eslint-plugin-mocha": "~6.2.1",
+    "eslint": "~6.7.2",
+    "eslint-plugin-mocha": "~6.2.2",
     "husky": "~3.1.0",
-    "lint-staged": "~9.4.3",
+    "lint-staged": "~9.5.0",
     "mocha": "~6.2.2",
-    "nyc": "~14.1.1",
     "standard": "~14.3.1"
   },
   "eslintConfig": {
@@ -55,11 +54,11 @@
     ]
   },
   "scripts": {
-    "codecov": "./node_modules/.bin/codecov",
+    "codecov": "codecov",
     "coverage": "c8 --reporter=text --reporter=lcov mocha --timeout 25000 test/unit",
-    "lint": "standard && eslint ./",
-    "test": "./node_modules/.bin/mocha --recursive --timeout 10000 test/unit",
-    "test-debug": "./node_modules/.bin/mocha --inspect-brk --timeout 10000 test/unit"
+    "lint": "standard && eslint ./test",
+    "test": "cross-env SILENT_MODE=true mocha --recursive --timeout 10000 test/unit",
+    "test-debug": "mocha --inspect-brk --timeout 10000 test/unit"
   },
   "lint-staged": {
     "*.js": "standard"
