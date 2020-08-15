@@ -33,7 +33,7 @@
     "eslint-plugin-mocha": "~7.0.1",
     "husky": "~4.2.5",
     "lint-staged": "~10.2.10",
-    "mocha": "~8.0.1",
+    "mocha": "~8.1.0",
     "standard": "~14.3.4"
   },
   "eslintConfig": {
