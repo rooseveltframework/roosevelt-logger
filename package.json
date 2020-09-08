@@ -17,7 +17,7 @@
   "license": "CC-BY-4.0",
   "main": "logger.js",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=12.0.0"
   },
   "engineStrict": true,
   "dependencies": {
@@ -28,13 +28,13 @@
   "devDependencies": {
     "c8": "~7.3.0",
     "codecov": "~3.7.0",
-    "cross-env": "~7.0.2",
-    "eslint": "~7.6.0",
+    "cross-env": "~7.0.0",
+    "eslint": "~7.8.0",
     "eslint-plugin-mocha": "~8.0.0",
-    "husky": "~4.2.5",
-    "lint-staged": "~10.2.10",
+    "husky": "~4.3.0",
+    "lint-staged": "~10.3.0",
     "mocha": "~8.1.0",
-    "standard": "~14.3.4"
+    "standard": "~14.3.0"
   },
   "eslintConfig": {
     "parserOptions": {
