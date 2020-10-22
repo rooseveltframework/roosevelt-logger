@@ -34,7 +34,7 @@
     "husky": "~4.3.0",
     "lint-staged": "~10.3.0",
     "mocha": "~8.1.0",
-    "standard": "~14.3.0"
+    "standard": "~15.0.0"
   },
   "eslintConfig": {
     "parserOptions": {
