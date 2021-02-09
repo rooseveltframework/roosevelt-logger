@@ -26,13 +26,12 @@
     "winston": "~3.3.3"
   },
   "devDependencies": {
-    "c8": "~7.4.0",
+    "c8": "~7.5.0",
     "codecov": "~3.8.1",
     "cross-env": "~7.0.3",
-    "eslint": "~7.18.0",
+    "eslint": "~7.19.0",
     "eslint-plugin-mocha": "~8.0.0",
-    "husky": "~4.3.8",
-    "lint-staged": "~10.5.3",
+    "lint-staged": "~10.5.4",
     "mocha": "~8.2.1",
     "standard": "~16.0.3"
   },
@@ -62,11 +61,6 @@
     "url": "git://github.com/rooseveltframework/roosevelt-logger.git"
   },
   "keywords": [],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged && eslint ./test"
-    }
-  },
   "funding": {
     "type": "individual",
     "url": "https://github.com/sponsors/kethinov"
