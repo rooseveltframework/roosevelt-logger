@@ -22,7 +22,7 @@
   "engineStrict": true,
   "dependencies": {
     "colors": "~1.4.0",
-    "node-emoji": "~1.10.0",
+    "node-emoji": "~1.11.0",
     "winston": "~3.3.3"
   },
   "devDependencies": {
