@@ -1,8 +1,8 @@
-require('colors')
+require('@colors/colors')
 const emoji = require('node-emoji')
 const util = require('util')
 const winston = require('winston')
-const colors = require('colors/safe')
+const colors = require('@colors/colors/safe')
 const defaults = require('./defaults.json')
 const { combine, printf } = winston.format
 

@@ -12,7 +12,7 @@
     "defaults.json",
     "logger.js"
   ],
-  "version": "0.2.2",
+  "version": "0.2.3",
   "homepage": "https://github.com/rooseveltframework/roosevelt-logger",
   "license": "CC-BY-4.0",
   "main": "logger.js",
@@ -21,18 +21,18 @@
   },
   "engineStrict": true,
   "dependencies": {
-    "colors": "~1.4.0",
+    "@colors/colors": "~1.5.0",
     "node-emoji": "~1.11.0",
-    "winston": "~3.3.3"
+    "winston": "~3.6.0"
   },
   "devDependencies": {
     "c8": "~7.11.0",
-    "codecov": "~3.8.2",
+    "codecov": "~3.8.3",
     "cross-env": "~7.0.3",
-    "eslint": "~8.5.0",
-    "eslint-plugin-mocha": "~10.0.0",
-    "mocha": "~9.1.0",
-    "standard": "~16.0.3"
+    "eslint": "~8.9.0",
+    "eslint-plugin-mocha": "~10.0.3",
+    "mocha": "~9.2.0",
+    "standard": "~16.0.4"
   },
   "eslintConfig": {
     "parserOptions": {
