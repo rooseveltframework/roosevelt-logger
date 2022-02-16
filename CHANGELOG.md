@@ -4,6 +4,13 @@
 
 - Put your changes here...
 
+## 0.2.3
+
+- Dropped Node 10 and Node 12 support
+- Updated various dependencies
+  - Migrated colors to @colors/colors
+- Migrated from Travis to GitHub Actions
+
 ## 0.2.2
 
 - Fixed bug which caused whitespace at the end of a log to be removed.

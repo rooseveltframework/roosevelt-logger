@@ -62,7 +62,7 @@ Optionally you can pass the logger a set of configs.
       - `prefix`: *[String]*: The string that prefixes any log entry. If not set or set to a falsy value (e.g. `null`, an empty string, etc), the prefix will be disabled.
         - Default for warnings: `⚠️`.
         - Default for errors: `❌`.
-      - `color`: *[String]*: The color that the text will be set to using [colors](https://www.npmjs.com/package/colors) npm package. If not set, it will use whatever the default color is for the native type selected.
+      - `color`: *[String]*: The color that the text will be set to using [@colors/colors](https://www.npmjs.com/package/@colors/colors) npm package. If not set, it will use whatever the default color is for the native type selected.
     - Example: Simple custom type example for a new log type called `dbError`:
 
     ```json
