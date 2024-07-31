@@ -23,7 +23,7 @@
   "dependencies": {
     "@colors/colors": "1.6.0",
     "node-emoji": "2.1.3",
-    "winston": "3.13.0"
+    "winston": "3.13.1"
   },
   "devDependencies": {
     "c8": "10.1.2",
@@ -31,7 +31,7 @@
     "cross-env": "7.0.3",
     "eslint": "8.57.0",
     "eslint-plugin-mocha": "10.4.1",
-    "mocha": "10.6.0",
+    "mocha": "10.7.0",
     "standard": "17.1.0"
   },
   "eslintConfig": {
