@@ -23,7 +23,7 @@
   "dependencies": {
     "@colors/colors": "1.6.0",
     "node-emoji": "2.1.3",
-    "winston": "3.14.0"
+    "winston": "3.14.2"
   },
   "devDependencies": {
     "c8": "10.1.2",
