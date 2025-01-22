@@ -30,7 +30,7 @@
     "cross-env": "7.0.3",
     "eslint": "8.57.1",
     "eslint-plugin-mocha": "10.4.1",
-    "mocha": "11.0.1",
+    "mocha": "11.1.0",
     "standard": "17.1.2"
   },
   "eslintConfig": {
