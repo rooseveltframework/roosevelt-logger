@@ -12,10 +12,10 @@
     "defaults.json",
     "roosevelt-logger.js"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/rooseveltframework/roosevelt-logger",
   "license": "CC-BY-4.0",
-  "main": "logger.js",
+  "main": "roosevelt-logger.js",
   "engines": {
     "node": ">=18.0.0"
   },
