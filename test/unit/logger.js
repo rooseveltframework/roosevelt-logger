@@ -4,7 +4,7 @@ const assert = require('assert')
 const { fork } = require('child_process')
 const path = require('path')
 const util = require('util')
-const Logger = require('../../logger')
+const Logger = require('../../roosevelt-logger')
 
 describe('roosevelt-logger', function () {
   /**

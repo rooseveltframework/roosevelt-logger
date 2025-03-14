@@ -1,6 +1,6 @@
 {
   "name": "roosevelt-logger",
-  "description": "🧸📝 Intuitive, attractive logger for Node.js applications based on Winston.",
+  "description": "🧸🪵 Intuitive, attractive logger for Node.js applications based on Winston.",
   "author": "Roosevelt Framework Team <rooseveltframework@gmail.com>",
   "contributors": [
     {
@@ -10,9 +10,9 @@
   ],
   "files": [
     "defaults.json",
-    "logger.js"
+    "roosevelt-logger.js"
   ],
-  "version": "0.2.3",
+  "version": "1.0.0",
   "homepage": "https://github.com/rooseveltframework/roosevelt-logger",
   "license": "CC-BY-4.0",
   "main": "logger.js",

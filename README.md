@@ -3,7 +3,9 @@
 [![Build Status](https://github.com/rooseveltframework/roosevelt-logger/workflows/CI/badge.svg
 )](https://github.com/rooseveltframework/roosevelt-logger/actions?query=workflow%3ACI) [![npm](https://img.shields.io/npm/v/roosevelt-logger.svg)](https://www.npmjs.com/package/roosevelt-logger)
 
-Intuitive, attractive logger for Node.js applications based on [Winston](https://github.com/winstonjs/winston). This module was built and is maintained by the [Roosevelt web framework](https://github.com/rooseveltframework/roosevelt) [team](https://github.com/orgs/rooseveltframework/people), but it can be used independently of Roosevelt as well.
+Intuitive, attractive logger for Node.js applications based on [Winston](https://github.com/winstonjs/winston).
+
+This module was built and is maintained by the [Roosevelt web framework](https://github.com/rooseveltframework/roosevelt) [team](https://github.com/orgs/rooseveltframework/people), but it can be used independently of Roosevelt as well.
 
 ## Install
 

@@ -1,4 +1,4 @@
-const Logger = require('../../logger')
+const Logger = require('../../roosevelt-logger')
 
 // spoof windows environment
 Object.defineProperty(process, 'platform', {
