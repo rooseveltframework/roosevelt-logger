@@ -1,5 +1,5 @@
 // require logger
-const Logger = require('../../logger')
+const Logger = require('../../roosevelt-logger')
 const logger = new Logger({
   params: {
     enablePrefix: true,

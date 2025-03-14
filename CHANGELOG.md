@@ -4,6 +4,11 @@
 
 - Put your changes here...
 
+## 1.0.0
+
+- Refactored the code.
+- Updated dependencies.
+
 ## 0.2.3
 
 - Dropped Node 10 and Node 12 support

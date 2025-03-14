@@ -137,10 +137,10 @@ class Logger {
 
     // bind new logger type to logger config
     this.params[name] = {
-      type: type,
+      type,
       enable: true,
-      prefix: prefix,
-      color: color
+      prefix,
+      color
     }
 
     // create a function for the new logger
