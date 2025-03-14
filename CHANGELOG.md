@@ -4,6 +4,10 @@
 
 - Put your changes here...
 
+## 1.0.1
+
+- Fixed crash.
+
 ## 1.0.0
 
 - Refactored the code.
