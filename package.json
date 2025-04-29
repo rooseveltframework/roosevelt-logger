@@ -10,7 +10,8 @@
   ],
   "files": [
     "defaults.json",
-    "roosevelt-logger.js"
+    "roosevelt-logger.js",
+    "*.md"
   ],
   "version": "1.0.1",
   "homepage": "https://github.com/rooseveltframework/roosevelt-logger",
