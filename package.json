@@ -14,7 +14,7 @@
     "*.md"
   ],
   "version": "1.0.1",
-  "homepage": "https://github.com/rooseveltframework/roosevelt-logger",
+  "homepage": "https://rooseveltframework.org/docs/roosevelt-logger/latest",
   "license": "CC-BY-4.0",
   "main": "roosevelt-logger.js",
   "engines": {

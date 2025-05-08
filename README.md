@@ -1,4 +1,4 @@
-[![npm](https://img.shields.io/npm/v/roosevelt-logger.svg)](https://www.npmjs.com/package/roosevelt-logger)
+🧸🪵 **roosevelt-logger** [![npm](https://img.shields.io/npm/v/roosevelt-logger.svg)](https://www.npmjs.com/package/roosevelt-logger)
 
 Intuitive, attractive logger for Node.js applications based on [Winston](https://github.com/winstonjs/winston).
 
