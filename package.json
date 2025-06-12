@@ -18,7 +18,7 @@
   "license": "CC-BY-4.0",
   "main": "roosevelt-logger.js",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@colors/colors": "1.6.0",
