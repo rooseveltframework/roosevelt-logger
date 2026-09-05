@@ -1,12 +1,19 @@
-require('@colors/colors')
-const emoji = require('node-emoji')
 const util = require('util')
-const winston = require('winston')
-const colors = require('@colors/colors/safe')
 const defaults = require('./defaults.json')
-const { combine, printf } = winston.format
 
-/** Class representing roosevelt-logger */
+/**
+ * matches a string that is nothing but a single emoji, e.g. the first arg of logger.log('🍕', 'Pizza Emoji')
+ *
+ * RGI_Emoji covers multi-codepoint emoji like 👍🏽 and 🇺🇸, while Extended_Pictographic covers the single codepoints that RGI_Emoji skips unless they carry a variation selector, like 🗄 and ©.
+ *
+ * this is built with the RegExp constructor rather than written as a literal because the linter can't yet parse the `v` flag that the RGI_Emoji property requires.
+ */
+// eslint-disable-next-line prefer-regex-literals
+const emojiRegex = new RegExp('^(?:\\p{RGI_Emoji}|\\p{Extended_Pictographic})$', 'v')
+
+// util.inspect.colors enumerates every format name util.styleText will accept
+const validColors = new Set(Object.keys(util.inspect.colors))
+
 class Logger {
   /**
    * Create a logger instance
@@ -18,48 +25,23 @@ class Logger {
 
     // bind parameters
     this.params = setParams(params)
-    params = this.params
-    const globals = params.params
-    const methods = params.methods
+    const globals = this.params.params
 
-    // transports object to easily override settings
-    const transports = {
-      console: new winston.transports.Console({
-        stderrLevels: ['error', 'warn']
-      })
-    }
-
-    // logger module
-    const wLogger = winston.createLogger({
-      // clean output instead of winstons default
-      format: combine(
-        printf(info => info.message)
-      ),
-      // basic console transport set-up
-      transports: [
-        transports.console
-      ]
-    })
-
-    // expose the bare winston module as well as this instance of it
-    this.winston = winston
-    this.winstonInstance = wLogger
-    this.transports = transports
+    // when true all logging is suppressed
+    this.silent = false
 
     // iterate over global disable array
-    for (const env in globals.disable) {
+    for (const env of globals.disable) {
       // if the arg is set to true/"true" in process.env or it's the env in process.env.NODE_ENV, suppress all logs
-      if (process.env.NODE_ENV === globals.disable[env] || process.env[globals.disable[env]] === 'true') {
-        transports.console.silent = true
+      if (process.env.NODE_ENV === env || process.env[env] === 'true') {
+        this.silent = true
       }
     }
 
     // iterate over methods and bind each one to this class
-    for (const key in methods) {
-      const { enable, type, prefix, color } = methods[key]
-
-      this[key] = function (...args) {
-        this._createLog(args, enable, globals.enablePrefix, prefix, color, type)
+    for (const name in this.params.methods) {
+      this[name] = function (...args) {
+        this._createLog(name, args)
       }
     }
 
@@ -68,59 +50,57 @@ class Logger {
   }
 
   /**
-   * Parse log configuration and dispatch to winston logger instance
-   * @param {Array<*>} args - Args to pass to the interal logger
-   * @param {boolean} enable - Flag to state if this should be logged
-   * @param {boolean} enablePrefix - Flag to state if the prefix should be printed
-   * @param {string} prefix - The prefix for this log entry
-   * @param {string} color - The color for this log entry
-   * @param {string} type - The internal log level type for winston
+   * parse log configuration and write the log entry to the appropriate stream
+   * @param {string} name - name of the logger method that produced this log
+   * @param {Array<*>} args - args passed to the logger method
    */
-  _createLog (args, enable, enablePrefix, prefix, color, type) {
-    // log if the param is set to true
-    if (enable !== 'false' && enable !== false) {
-      // parse the log arguments
-      const logs = argumentsToString(args, enablePrefix, prefix)
-      // send the log level and message to winston for logging
-      if (color === false) {
-        this.winstonInstance.log({ level: type, message: logs })
-      } else {
-        this.winstonInstance.log({ level: type, message: colors[color](logs) })
-      }
+  _createLog (name, args) {
+    const { enable, type, prefix, color } = this.params.methods[name]
+
+    // skip the log if logging is off entirely or this method is disabled
+    if (this.silent || enable === false || enable === 'false') {
+      return
     }
+
+    // warnings and errors go to stderr, everything else to stdout
+    const stream = type === 'info' ? process.stdout : process.stderr
+
+    // parse the log arguments and write them out
+    const message = argumentsToString(args, this.params.params.enablePrefix, prefix)
+    stream.write(colorize(message, color, stream) + '\n')
   }
 
   /**
-   * Disable logging to console
+   * disable logging to console
    */
   disableLogging () {
-    this.transports.console.silent = true
+    this.silent = true
   }
 
   /**
-   * Enable logging to console
+   * enable logging to console
    */
   enableLogging () {
-    this.transports.console.silent = false
+    this.silent = false
   }
 
   /**
-   * Disable logging prefix
+   * disable logging prefix
    */
   disablePrefix () {
     this.params.params.enablePrefix = false
   }
 
   /**
-   * Enable logging prefix
+   * enable logging prefix
    */
   enablePrefix () {
     this.params.params.enablePrefix = true
   }
 
   /**
-   * Create a new logger method
-   * @param {object} params - Configuration for new logger method
+   * create a new logger method
+   * @param {object} params - configuration for new logger method
    */
   createLogMethod (params) {
     const name = params.name
@@ -131,39 +111,39 @@ class Logger {
       return
     }
 
-    // validate and sanitize config
-    params = validateLoggerMethod(name, params)
-    const { type, prefix, color } = params
-
-    // bind new logger type to logger config
-    this.params[name] = {
-      type,
-      enable: true,
-      prefix,
-      color
-    }
+    // validate and sanitize config, then bind the new logger type to the logger config
+    this.params.methods[name] = validateLoggerMethod(name, params)
 
     // create a function for the new logger
     this[name] = function (...args) {
-      this._createLog(args, true, this.params.enablePrefix, prefix, color, type)
+      this._createLog(name, args)
     }
   }
 }
 
 /**
- * Utility Functions
+ * stringify a single log argument
+ * @param {*} arg - the argument to stringify
+ * @returns {string} - returns the argument as a string
  */
+function stringify (arg) {
+  return typeof arg === 'string' ? arg : util.inspect(arg, false, null, false)
+}
 
 /**
- * Takes in an input of arguments which are parsed, concatenated, and returned back as a string.
- * @param {object} input - Object of arguments to be parsed
- * @param {boolean} enablePrefix - If the returning string should contain a prefix or remove them
- * @param {string} prefix - A string that is prepended to the returning string.
- * @returns {string} - Returns the parsed and concatenated string of arguments
+ * takes in an input of arguments which are parsed, concatenated, and returned back as a string
+ * @param {Array<*>} args - array of arguments to be parsed
+ * @param {boolean} enablePrefix - if the returning string should contain a prefix or remove them
+ * @param {string} prefix - a string that is prepended to the returning string.
+ * @returns {string} - returns the parsed and concatenated string of arguments
  */
-function argumentsToString (input, enablePrefix, prefix) {
+function argumentsToString (args, enablePrefix, prefix) {
   let str = ''
-  const args = Object.values(input)
+
+  // nothing was logged
+  if (args.length === 0) {
+    return str
+  }
 
   // determine if first arg is a prefix
   if (typeof args[0] === 'string' && args[0].trim() === prefix) {
@@ -171,38 +151,59 @@ function argumentsToString (input, enablePrefix, prefix) {
     if (enablePrefix) {
       str += args[0].trim() + '  '
     }
-  } else if (typeof args[0] === 'string' && emoji.which(args[0].trim())) {
+  } else if (typeof args[0] === 'string' && emojiRegex.test(args[0].trim())) {
     // first arg is an emoji, add it as a prefix when enabled
     if (enablePrefix) {
       str += args[0].trim() + '  '
     }
   } else if (prefix && prefix.length > 0) {
     // first arg is not a prefix and prefix is set, add prefix when enabled
-    const arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
     if (enablePrefix) {
-      str += prefix + '  ' + arg0
+      str += prefix + '  ' + stringify(args[0])
     } else {
-      str += arg0 + ' '
+      str += stringify(args[0]) + ' '
     }
   } else {
     // no prefix configured or in use
-    const arg0 = (typeof args[0] === 'string') ? args[0] : util.inspect(args[0], false, null, false)
-    str += arg0 + ' '
+    str += stringify(args[0]) + ' '
   }
 
   // print out remaining args
-  const rest = args.slice(1)
-  for (const k in rest) {
-    const arg = (typeof rest[k] === 'string') ? rest[k] : util.inspect(rest[k], false, null, false)
-    str += arg + ' '
+  for (const arg of args.slice(1)) {
+    str += stringify(arg) + ' '
   }
+
   return str
 }
 
 /**
- * Generate params object based on params in logger constructor and defaults
- * @param {object} params - Params in logger constructor
- * @returns {object} - Fleshed out params object
+ * apply a color to a log entry, but only when the target stream can render it
+ * @param {string} text - the log entry
+ * @param {string|boolean} color - a util.styleText format name, or false for no color
+ * @param {object} stream - the stream the log entry will be written to
+ * @returns {string} - returns the log entry, colorized when appropriate
+ */
+function colorize (text, color, stream) {
+  // no color was configured for this log type
+  if (color === false) {
+    return text
+  }
+
+  // util.styleText can perform this check itself via its validateStream option, but that option is not present in every release of Node 22, so the check is performed here instead
+  if (process.env.NO_COLOR || process.env.FORCE_COLOR === '0') {
+    return text
+  }
+  if (!stream.isTTY && !process.env.FORCE_COLOR) {
+    return text
+  }
+
+  return util.styleText(color, text)
+}
+
+/**
+ * generate params object based on params in logger constructor and defaults
+ * @param {object} params - params in logger constructor
+ * @returns {object} - fleshed out params object
   */
 function setParams (params) {
   // sanitized configuration to output
@@ -215,15 +216,15 @@ function setParams (params) {
   const methods = params.methods || {}
 
   // sanitize enablePrefix param
-  if (Object.prototype.hasOwnProperty.call(globals, 'enablePrefix')) {
+  if (Object.hasOwn(globals, 'enablePrefix')) {
     newParams.params.enablePrefix = typeof globals.enablePrefix === 'boolean' ? globals.enablePrefix : defaults.params.enablePrefix
   } else {
     newParams.params.enablePrefix = defaults.params.enablePrefix
   }
 
   /**
-   * Disable prefixes in windows by default
-   * See: https://github.com/rooseveltframework/roosevelt-logger/issues/34 for more details
+   * disable prefixes in windows by default
+   * see: https://github.com/rooseveltframework/roosevelt-logger/issues/34 for more details
    */
   if (process.platform === 'win32') {
     newParams.params.enablePrefix = false
@@ -237,7 +238,7 @@ function setParams (params) {
   }
 
   // sanitize disable param
-  if (Object.prototype.hasOwnProperty.call(globals, 'disable')) {
+  if (Object.hasOwn(globals, 'disable')) {
     newParams.params.disable = Array.isArray(globals.disable) ? globals.disable : defaults.params.disable
   } else {
     newParams.params.disable = defaults.params.disable
@@ -245,9 +246,11 @@ function setParams (params) {
 
   // loop through and validate configured methods
   for (const key in methods) {
+    const sanitizedConfig = validateLoggerMethod(key, methods[key])
+
     // this if statement ensures that the method object doesn't get polluted by invalid params
-    if (validateLoggerMethod(key, methods[key])) {
-      newParams.methods[key] = validateLoggerMethod(key, methods[key])
+    if (sanitizedConfig) {
+      newParams.methods[key] = sanitizedConfig
     }
   }
 
@@ -262,72 +265,62 @@ function setParams (params) {
 }
 
 /**
- * Sanitize logger method configuration and return it
- * @param {object} method - Logger method name
- * @param {object|boolean} - Logger method config
- * @returns {object} - Validated logger method config
+ * sanitize logger method configuration and return it
+ * @param {string} method - logger method name
+ * @param {object|boolean} params - logger method config
+ * @returns {object} - validated logger method config
  */
 function validateLoggerMethod (method, params) {
-  let sanitizedConfig
+  // a default method falls back to its own defaults, a custom method falls back to info
+  const fallback = defaults.methods[method] || { type: 'info', enable: true }
 
-  if (defaults.methods[method]) {
-    // sanitize the params on a default method
-    if (typeof params === 'object') {
-      const { type, enable, prefix, color } = params
-      sanitizedConfig = {}
-      sanitizedConfig.type = validateType(type) ? type : defaults.methods[method].type
-      sanitizedConfig.enable = validateEnable(enable) ? enable : defaults.methods[method].enable
-      sanitizedConfig.prefix = sanitizePrefix(prefix, sanitizedConfig.type)
-      sanitizedConfig.color = sanitizeColor(color, sanitizedConfig.type)
-    } else if (typeof params === 'boolean') {
-      sanitizedConfig = {}
-      sanitizedConfig.type = defaults.methods[method].type
-      sanitizedConfig.enable = params
-      sanitizedConfig.prefix = sanitizePrefix(defaults.methods[method].prefix, sanitizedConfig.type)
-      sanitizedConfig.color = sanitizeColor(defaults.methods[method].color, sanitizedConfig.type)
-    }
-  } else {
-    // sanitize the params on a custom method
-    if (typeof params === 'object') {
-      const { type, enable, prefix, color } = params
-      sanitizedConfig = {}
-      sanitizedConfig.type = validateType(type) ? type : 'info'
-      sanitizedConfig.enable = validateEnable(enable) ? enable : true
-      sanitizedConfig.prefix = sanitizePrefix(prefix, sanitizedConfig.type)
-      sanitizedConfig.color = sanitizeColor(color, sanitizedConfig.type)
-    } else if (typeof params === 'boolean') {
-      const { prefix, color } = params
-      sanitizedConfig = {}
-      sanitizedConfig.type = 'info'
-      sanitizedConfig.enable = params
-      sanitizedConfig.prefix = sanitizePrefix(prefix, sanitizedConfig.type)
-      sanitizedConfig.color = sanitizeColor(color, sanitizedConfig.type)
-    }
+  if (typeof params === 'object' && params !== null) {
+    const { type, enable, prefix, color } = params
+    const sanitizedConfig = {}
+
+    sanitizedConfig.type = validateType(type) ? type : fallback.type
+    sanitizedConfig.enable = validateEnable(enable) ? enable : fallback.enable
+    sanitizedConfig.prefix = sanitizePrefix(prefix, sanitizedConfig.type)
+    sanitizedConfig.color = sanitizeColor(color, sanitizedConfig.type)
+
+    return sanitizedConfig
   }
 
-  return sanitizedConfig
+  if (typeof params === 'boolean') {
+    const sanitizedConfig = {}
+
+    sanitizedConfig.type = fallback.type
+    sanitizedConfig.enable = params
+    sanitizedConfig.prefix = sanitizePrefix(fallback.prefix, sanitizedConfig.type)
+    sanitizedConfig.color = sanitizeColor(fallback.color, sanitizedConfig.type)
+
+    return sanitizedConfig
+  }
+
+  // the config is neither an object nor a boolean, so there is nothing to sanitize
+  return undefined
 }
 
 /**
- * Check the 'type' property is defined and a valid option
- * @param {string} type - Type of a log type
+ * check the 'type' property is defined and a valid option
+ * @param {string} type - type of a log type
  */
 function validateType (type) {
   return type !== undefined && ['info', 'warn', 'error'].includes(type)
 }
 
 /**
- * Check the 'enable' property is defined and a boolean
- * @param {boolean} enableBool - Boolean to decide if a specific log type is enabled
+ * check the 'enable' property is defined and a boolean
+ * @param {boolean} enableBool - boolean to decide if a specific log type is enabled
  */
 function validateEnable (enableBool) {
   return enableBool !== undefined && typeof enableBool === 'boolean'
 }
 
 /**
- * Check the 'prefix' property is defined and a string or boolean and set to a default if undefined
- * @param {string|boolean} prefix - Prefix of a log type
- * @param {string} type - Type of a log type
+ * check the 'prefix' property is defined and a string or boolean and set to a default if undefined
+ * @param {string|boolean} prefix - prefix of a log type
+ * @param {string} type - type of a log type
  */
 function sanitizePrefix (prefix, type) {
   // check prefix validity
@@ -351,13 +344,13 @@ function sanitizePrefix (prefix, type) {
 }
 
 /**
- * Check the 'color' property is defined and a string or boolean and set to a default if undefined
- * @param {string|boolean} color - Custom color of a log type
- * @param {string} type - Type of a log type
+ * check the 'color' property is a supported color name or false and set to a default if not
+ * @param {string|boolean} color - custom color of a log type
+ * @param {string} type - type of a log type
  */
 function sanitizeColor (color, type) {
   // check color validity
-  const validColor = color !== undefined && (typeof color === 'string' || typeof color === 'boolean')
+  const validColor = color === false || (typeof color === 'string' && validColors.has(color))
 
   // set to a default if invalid
   if (!validColor) {

@@ -1,6 +1,6 @@
 🧸🪵 **roosevelt-logger** [![npm](https://img.shields.io/npm/v/roosevelt-logger.svg)](https://www.npmjs.com/package/roosevelt-logger)
 
-Intuitive, attractive logger for Node.js applications based on [Winston](https://github.com/winstonjs/winston).
+Intuitive, attractive logger for Node.js applications. Built entirely on native Node.js APIs, with zero dependencies.
 
 This module was built and is maintained by the [Roosevelt web framework](https://rooseveltframework.org) [team](https://rooseveltframework.org/contributors), but it can be used independently of Roosevelt as well.
 
