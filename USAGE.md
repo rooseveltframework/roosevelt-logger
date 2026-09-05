@@ -37,7 +37,7 @@ const logger = new Logger({
     }
   },
   params: {
-    disable: ['LOADED_MOCHA_OPTS'] // disable logging during Mocha tests
+    disable: ['SILENT_MODE'] // disable logging when process.env.SILENT_MODE is 'true'
   }
 })
 

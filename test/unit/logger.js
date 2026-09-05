@@ -1,6 +1,5 @@
-/* eslint-env mocha */
-
 const assert = require('assert')
+const { describe, it, before } = require('node:test')
 const { fork } = require('child_process')
 const path = require('path')
 const util = require('util')
@@ -86,7 +85,27 @@ describe('roosevelt-logger', function () {
     }
   }
 
-  it('should initialize a logger and test many different logs', function (done) {
+  /**
+   * Run a script in a child process and resolve with everything it wrote, one entry per line.
+   * The streams are buffered and split rather than read chunk by chunk because a chunk can
+   * contain any number of lines depending on how the OS happens to flush the pipe.
+   */
+  const forkLogger = function (script, env) {
+    return new Promise(resolve => {
+      let stdout = ''
+      let stderr = ''
+      const forkedLogger = fork(path.join(__dirname, '../util/', script), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'], env })
+
+      forkedLogger.stdout.on('data', data => { stdout += data.toString() })
+      forkedLogger.stderr.on('data', data => { stderr += data.toString() })
+      forkedLogger.on('close', () => resolve({
+        logs: stdout.split('\n').filter(line => line !== ''),
+        errors: stderr.split('\n').filter(line => line !== '')
+      }))
+    })
+  }
+
+  it('should initialize a logger and test many different logs', function () {
     // instantiate the logger for this test
     const logger = new Logger(configs)
 
@@ -147,12 +166,9 @@ describe('roosevelt-logger', function () {
     if (typeof logs[10] !== 'undefined') {
       assert.fail('logger.custom5 output a log even though the log type is disabled')
     }
-
-    // exit test
-    done()
   })
 
-  it('should use the defaults if no logging params are passed in', function (done) {
+  it('should use the defaults if no logging params are passed in', function () {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -187,12 +203,9 @@ describe('roosevelt-logger', function () {
     // error log assertions
     assert.strictEqual(errors[0].includes('❌  Error Log'), true, 'The logger did not output an error log')
     assert.strictEqual(errors[1].includes('⚠️   Warning Log'), true, 'The logger did not output a warning log')
-
-    // exit test
-    done()
   })
 
-  it('should handle empty logs and other data types', function (done) {
+  it('should handle empty logs and other data types', function () {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -214,18 +227,15 @@ describe('roosevelt-logger', function () {
     unhookStdout()
 
     // log assertions
-    assert.strictEqual(logs[0].includes(''), true, 'The logger failed to output an empty log')
+    assert.strictEqual(logs[0], '\n', 'The logger failed to output an empty log')
     assert.strictEqual(logs[1].includes(''), true, 'The logger failed to output an emty string')
     assert.strictEqual(logs[2].includes('123'), true, 'The logger did not output a number')
     // use inspect for objects
     assert.strictEqual(logs[3].includes('{ key: \'value\' }'), true, 'The logger did not output an object')
     assert.strictEqual(logs[4].includes(util.inspect(['array'], false, null, false)), true, 'The logger did not output an array')
-
-    // exit test
-    done()
   })
 
-  it('should remove prefixes when enablePrefix is set to false', function (done) {
+  it('should remove prefixes when enablePrefix is set to false', function () {
     // instantiate the logger for this test
     configs.params.enablePrefix = false
     const logger = new Logger(configs)
@@ -267,54 +277,27 @@ describe('roosevelt-logger', function () {
     assert.strictEqual(errors[0].includes('❌'), false, 'The logger did not remove the emoji in logger.error()')
     assert.strictEqual(errors[1].includes('⚠️'), false, 'The logger did not remove the emoji in logger.warn()')
     assert.strictEqual(errors[2].includes('❤️'), false, 'The logger did not remove the emoji in logger.warn()')
-
-    // exit test
-    done()
   })
 
-  it('should disable logs in production mode if disable is set to [\'production\']', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'], env: { NODE_ENV: 'production' } })
+  it('should disable logs in production mode if disable is set to [\'production\']', async function () {
+    const { logs } = await forkLogger('fork.js', { NODE_ENV: 'production' })
 
-    forkedLogger.stdout.on('data', data => {
-      if (data.includes('Test Log')) {
-        assert.fail('Logs were not disabled in production mode')
-      }
-    })
-
-    forkedLogger.on('exit', () => {
-      done()
-    })
+    assert.strictEqual(logs.join('').includes('Test Log'), false, 'Logs were not disabled in production mode')
   })
 
-  it('should disable logs if disable is set to [\'test2\'] and process.env.test2 = \'true\'', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'], env: { test2: 'true' } })
+  it('should disable logs if disable is set to [\'test2\'] and process.env.test2 = \'true\'', async function () {
+    const { logs } = await forkLogger('fork.js', { test2: 'true' })
 
-    forkedLogger.stdout.on('data', data => {
-      if (data.includes('Test Log')) {
-        assert.fail('Logs were not disabled if process.env.test2 = \'true\'')
-      }
-    })
-
-    forkedLogger.on('exit', () => {
-      done()
-    })
+    assert.strictEqual(logs.join('').includes('Test Log'), false, 'Logs were not disabled if process.env.test2 = \'true\'')
   })
 
-  it('should disable log prefix if process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'', function (done) {
-    const forkedLogger = fork(path.join(__dirname, '../util/fork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'], env: { ROOSEVELT_LOGGER_ENABLE_PREFIX: false } })
+  it('should disable log prefix if process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'', async function () {
+    const { errors } = await forkLogger('fork.js', { ROOSEVELT_LOGGER_ENABLE_PREFIX: 'false' })
 
-    forkedLogger.stderr.on('data', data => {
-      if (data.includes('⚠️ Test Warning Log')) {
-        assert.fail('Log prefixes were not disabled when process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'')
-      }
-    })
-
-    forkedLogger.on('exit', () => {
-      done()
-    })
+    assert.strictEqual(errors.join('').includes('⚠️'), false, 'Log prefixes were not disabled when process.env.ROOSEVELT_LOGGER_ENABLE_PREFIX = \'false\'')
   })
 
-  it('should disable logs via logger.disableLogging method and enable logs via logger.enableLogging method', function (done) {
+  it('should disable logs via logger.disableLogging method and enable logs via logger.enableLogging method', function () {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -343,12 +326,9 @@ describe('roosevelt-logger', function () {
     // log assertions
     assert.strictEqual(logs.length === 1, true, 'The logger failed to disable logging')
     assert.strictEqual(logs[0].includes('This log should be seen'), true, 'The logger failed to enable logging')
-
-    // exit test
-    done()
   })
 
-  it('should disable prefix via logger.disablePrefix method and enable prefix via logger.enablePrefix method', function (done) {
+  it('should disable prefix via logger.disablePrefix method and enable prefix via logger.enablePrefix method', function () {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -377,12 +357,9 @@ describe('roosevelt-logger', function () {
     // log assertions
     assert.strictEqual(errors[0].includes('⚠️'), false, 'The logger failed to disable the prefix')
     assert.strictEqual(errors[1].includes('⚠️'), true, 'The logger failed to enable the prefix')
-
-    // exit test
-    done()
   })
 
-  it('should create a new functional log type via logger.createLogMethod method', function (done) {
+  it('should create a new functional log type via logger.createLogMethod method', function () {
     // instantiate the logger for this test
     const logger = new Logger()
 
@@ -407,6 +384,20 @@ describe('roosevelt-logger', function () {
     // test out the new log type
     logger.test('This is a test')
 
+    // programmatically generate a new log type with a prefix
+    logger.createLogMethod({
+      name: 'dbError',
+      type: 'error',
+      prefix: '💥'
+    })
+
+    // test out the prefixed log type
+    logger.dbError('Our whole stack is in crisis mode!')
+
+    // disable prefixes and log again
+    logger.disablePrefix()
+    logger.dbError('Our whole stack is in crisis mode!')
+
     // generate another new invalid log type
     logger.createLogMethod({
       type: 'info'
@@ -418,27 +409,65 @@ describe('roosevelt-logger', function () {
 
     // log assertions
     assert.strictEqual(logs[0].includes('This is a test'), true, 'The logger failed to log with the new log type')
-    assert.strictEqual(errors[0].includes('Must be type string.'), true, 'The logger attempted to create invalid log type')
-
-    // exit test
-    done()
+    assert.strictEqual(errors[0].includes('💥  Our whole stack is in crisis mode!'), true, 'The logger failed to prefix a programmatically created log type')
+    assert.strictEqual(errors[1].includes('💥'), false, 'The logger failed to remove the prefix of a programmatically created log type')
+    assert.strictEqual(errors[2].includes('Must be type string.'), true, 'The logger attempted to create invalid log type')
   })
 
-  it('should disable log prefix by default in windows and allow override via ROOSEVELT_LOGGER_ENABLE_PREFIX env and logger.enablePrefix method', function (done) {
-    const logs = []
-    const forkedLogger = fork(path.join(__dirname, '../util/windowsFork.js'), [], { stdio: ['pipe', 'pipe', 'pipe', 'ipc'] })
-
-    forkedLogger.stderr.on('data', data => {
-      // push each log to an array
-      logs.push(data.toString())
+  it('should fall back to the default color when an unsupported color is configured', function () {
+    // instantiate a logger with a color name that util.styleText does not support
+    const logger = new Logger({
+      methods: {
+        custom1: {
+          type: 'error',
+          color: 'notacolor'
+        }
+      }
     })
 
-    forkedLogger.on('exit', () => {
-      // log assertions
-      assert.strictEqual(logs[0].includes('⚠️'), false, 'The logger failed to disable prefixes in windows by default')
-      assert.strictEqual(logs[1].includes('⚠️'), true, 'The logger failed to enable prefix via enablePrefix()')
-      assert.strictEqual(logs[2].includes('⚠️'), true, 'The logger failed to enable prefix via env')
-      done()
+    // variable to store the logs
+    const errors = []
+    // hook up standard errors
+    const unhookStderr = hookStream(process.stderr, function (string, encoding, fd) {
+      errors.push(string)
     })
+
+    // this log would throw if the invalid color made it through to util.styleText
+    logger.custom1('Invalid color')
+
+    // unhook stderr
+    unhookStderr()
+
+    // config assertions
+    assert.strictEqual(logger.params.methods.custom1.color, 'red', 'The logger did not fall back to the default color for the log type')
+    assert.strictEqual(errors[0].includes('Invalid color'), true, 'The logger failed to output a log with an invalid color configured')
+  })
+
+  it('should skip colors when the output stream is not a TTY', async function () {
+    const { errors } = await forkLogger('fork.js', {})
+
+    assert.strictEqual(errors.join('').includes('\u001b['), false, 'The logger colorized a log written to a piped stream')
+  })
+
+  it('should apply colors when process.env.FORCE_COLOR is set', async function () {
+    const { errors } = await forkLogger('fork.js', { FORCE_COLOR: '1' })
+
+    // warnings are yellow by default
+    assert.strictEqual(errors.join('').includes('\u001b[33m'), true, 'The logger did not colorize a log when FORCE_COLOR was set')
+  })
+
+  it('should skip colors when process.env.NO_COLOR is set', async function () {
+    const { errors } = await forkLogger('fork.js', { FORCE_COLOR: '1', NO_COLOR: '1' })
+
+    assert.strictEqual(errors.join('').includes('\u001b['), false, 'The logger colorized a log when NO_COLOR was set')
+  })
+
+  it('should disable log prefix by default in windows and allow override via ROOSEVELT_LOGGER_ENABLE_PREFIX env and logger.enablePrefix method', async function () {
+    const { errors } = await forkLogger('windowsFork.js')
+
+    // log assertions
+    assert.strictEqual(errors[0].includes('⚠️'), false, 'The logger failed to disable prefixes in windows by default')
+    assert.strictEqual(errors[1].includes('⚠️'), true, 'The logger failed to enable prefix via enablePrefix()')
+    assert.strictEqual(errors[2].includes('⚠️'), true, 'The logger failed to enable prefix via env')
   })
 })

@@ -14,7 +14,7 @@ The following params can be passed when creating a new instance of `roosevelt-lo
       - `prefix`: *[String]*: The string that prefixes any log entry. If not set or set to a falsy value (e.g. `null`, an empty string, etc), the prefix will be disabled.
         - Default for warnings: `⚠️`.
         - Default for errors: `❌`.
-      - `color`: *[String]*: The color that the text will be set to using [@colors/colors](https://www.npmjs.com/package/@colors/colors) npm package. If not set, it will use whatever the default color is for the native type selected.
+      - `color`: *[String]*: The color that the text will be set to. Accepts any format name supported by Node's [`util.styleText`](https://nodejs.org/api/util.html#utilstyletextformat-text-options), which is to say any key of `util.inspect.colors`, e.g. `red`, `yellow`, `cyan`, `redBright`, `bgBlue`, `bold`, or `underline`. Set it to `false` to disable color for this log type. If not set, or set to a name that isn't supported, it will use whatever the default color is for the native type selected.
 
 Custom type example:
 
@@ -30,10 +30,12 @@ Custom type example:
 
 The above example would create a custom log type called `dbError`. It will log errors with a 🗄 prefix and cyan text color.
 
+Colors are applied only when the output stream is a TTY that reports color support. They are skipped automatically when output is piped or redirected, when `NO_COLOR` is set, and when `FORCE_COLOR` is set to `0`. Setting `FORCE_COLOR` to any other value applies colors even when output is not a TTY.
+
 - `params`: Configuration that applies to all logger methods:
   - `disable` *[Array of Strings]*: Disable all logging in certain environments. Each entry can be either an environment variable or the value of the `NODE_ENV` environment variable. Default: `[]`.
     - Example usage:
-      - `['LOADED_MOCHA_OPTS']`: Disables logger when app is being run by [Mocha](https://mochajs.org/).
+      - `['SILENT_MODE']`: Disables logger when `SILENT_MODE` is set to `true`, e.g. while running tests.
       - `['production']`: Disables logger when `NODE_ENV` is set to `production`.
   - `enablePrefix` *[Boolean]*: Enable prefixes which can contain emojis or other strings to be prepended to logs. This can also be toggled with the `ROOSEVELT_LOGGER_ENABLE_PREFIX` environment variable. Default: `true`.
 
@@ -41,9 +43,8 @@ The above example would create a custom log type called `dbError`. It will log e
 
 When you create an instance of `roosevelt-logger`, the following properties will be available on the `logger` instance:
 
-- `winston` *[Object]*: The [Winston](https://www.npmjs.com/package/winston) module that `roosevelt-logger` uses internally.
-- `winstonInstance` *[Object]*: The specific [Winston](https://www.npmjs.com/package/winston) object instance instantiated by `roosevelt-logger`.
-- `transports` *[Object]*: The default [Winston transports](https://github.com/winstonjs/winston#transports) enabled by `roosevelt-logger`.
+- `params` *[Object]*: The sanitized configuration this logger instance was created with.
+- `silent` *[Boolean]*: Whether logging is currently suppressed. Toggled by `enableLogging()` and `disableLogging()`.
 - `enableLogging()` *[Function]*: Enable the logger.
 - `disableLogging()` *[Function]*: Disable the logger.
 - `enablePrefix()` *[Function]*: Enable all log prefixes.
@@ -57,7 +58,7 @@ When you create an instance of `roosevelt-logger`, the following properties will
     - `prefix`: *[String]*: The string that prefixes any log entry. If not set or set to a falsy value (e.g. `null`, an empty string, etc), the prefix will be disabled.
       - Default for warnings: `⚠️`.
       - Default for errors: `❌`.
-    - `color`: *[String]*: The color that the text will be set to using [colors](https://www.npmjs.com/package/colors) npm package. If not set, it will use whatever the default color is for the native type selected.
+    - `color`: *[String]*: The color that the text will be set to. Accepts the same values as the `color` param documented above.
 
 Example `createLogMethod` usage:
 
